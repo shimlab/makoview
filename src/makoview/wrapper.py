@@ -54,7 +54,9 @@ def main():
     print(f"  Differential DB: {diff_db_path.absolute()}")
     print(f"  Modification DB: {mod_db_path.absolute()}")
 
-    run_app("src/makoview/app.py", port=args.port)  # type: ignore[call-non-callable]
+    path = Path(__file__).parent.resolve()
+
+    run_app(str(path / "app.py"), port=args.port)  # type: ignore[call-non-callable]
 
 
 if __name__ == "__main__":
