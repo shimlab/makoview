@@ -1,6 +1,6 @@
 [project]
 name = "makoview"
-version = "0.1.1"
+version = "0.1.2"
 description = "Visualise the results from Mako"
 readme = "README.md"
 requires-python = ">=3.9,<3.13"
@@ -12,6 +12,14 @@ dependencies = [
     "seaborn>=0.13.2",
     "shinyswatch>=0.9.0",
 ]
+
+[build-system]
+build-backend  = 'hatchling.build'
+requires       = ['hatchling']
+
+
+[tool.uv_build]
+src-layout = true
 
 
 [tool.uv]
