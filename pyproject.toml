@@ -1,7 +1,7 @@
 [project]
-name = "mako-visualisation"
+name = "makoview"
 version = "0.1.0"
-description = "Python Shiny app for MAKO visualisation"
+description = "Visualise the results from Mako"
 readme = "README.md"
 requires-python = ">=3.9,<3.13"
 dependencies = [
