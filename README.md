@@ -9,9 +9,6 @@ Makoview is available through both PyPI (tagged/release builds) and TestPyPI (de
 ```sh
 pip install makoview
 
-# for testing purposes: run from TestPyPI
-uvx --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ makoview
-
 # for testing purposes: run latest commit from GitHub
 uvx --from https://github.com/shimlab/makoview.git makoview
 ```
