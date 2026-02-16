@@ -22,9 +22,7 @@ if not os.path.exists(_reads_path):
 
 # load from db into a Pandas dataframe in-memory for faster access
 def load_data_into_memory(db_path) -> pd.DataFrame:
-    conn = duckdb.connect(database=db_path, read_only=True)
-    df = conn.execute("SELECT * FROM sites").fetchdf()
-    conn.close()
+    df = pd.read_csv(db_path, header="infer", sep="\t")
     return df
 
 
