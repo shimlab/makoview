@@ -2,10 +2,16 @@ import { useState, useEffect } from "react";
 import { useRef } from "react";
 import Axis from "./axis";
 import TrackView from "./track";
-import { getTrackBounds, genomicToPixel, pixelToGenomic } from "../utils/coordinates";
+import {
+  getTrackBounds,
+  getTotalPixelWidth,
+  genomicToPixel,
+  pixelToGenomic,
+} from "../utils/coordinates";
 
 function TrackDisplay(selected) {
   const [data, setData] = useState(null);
+  const [cursorX, setCursorX] = useState(null);
 
   // how many px should be used to render 1000 bases?
   let [viewerScale, setViewerScale] = useState(100);
@@ -27,7 +33,7 @@ function TrackDisplay(selected) {
     const start_bp = coords.start;
     const end_bp = coords.end;
 
-    const width = ((end_bp - start_bp) / 1000) * viewerScale;
+    const width = getTotalPixelWidth(metadata, viewerScale);
 
     setViewerSettings({
       start_bp,
@@ -94,12 +100,12 @@ function TrackDisplay(selected) {
       <div className="h-full w-full">
         {data !== null && (
           <div className="flex flex-col h-full justify-between">
-            <div className="flex flex-row gap-2 min-h-0">
+            <div className="flex flex-row gap-2 min-h-0 flex-1">
               <div className="flex flex-col pl-2">
-                <div className="h-6 font-bold text-right">
+                <div className="h-[80px] font-bold text-right text-base/[136px]">
                   {data.metadata.chr}
                 </div>
-                <div ref={yScrollRef} className="overflow-y-hidden">
+                <div ref={yScrollRef} className="overflow-y-hidden pb-25">
                   {(() => {
                     const labelRows = [];
                     for (const txId in data.transcripts) {
@@ -119,6 +125,7 @@ function TrackDisplay(selected) {
                   ref={xScrollRef}
                   view={viewerSettings}
                   metadata={data?.metadata}
+                  cursorX={cursorX}
                 />
                 <TrackView
                   ref={viewportRef}
@@ -126,6 +133,8 @@ function TrackDisplay(selected) {
                   view={viewerSettings}
                   yScrollRef={yScrollRef}
                   xScrollRef={xScrollRef}
+                  onCursorMove={setCursorX}
+                  cursorX={cursorX}
                 />
               </div>
             </div>
@@ -142,13 +151,13 @@ function TrackDisplay(selected) {
               <div className="flex-1"></div>
               <div className="text-lg">{Math.round(viewerSettings.scale)}%</div>
               <button
-                className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500"
+                className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
                 onClick={() => zoom(1.25)}
               >
                 +
               </button>
               <button
-                className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500"
+                className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
                 onClick={() => zoom(1 / 1.25)}
               >
                 –

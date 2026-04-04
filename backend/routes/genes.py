@@ -55,6 +55,16 @@ async def get_gene(id: str, request: Request):
 
         new_transcripts[id] = exons
 
+    all_intervals = sorted(
+        (exon["start"], exon["end"]) for tx in new_transcripts.values() for exon in tx
+    )
+    ranges = []
+    for s, e in all_intervals:
+        if ranges and s <= ranges[-1][1]:
+            ranges[-1][1] = max(ranges[-1][1], e)
+        else:
+            ranges.append([s, e])
+
     result = {
         "metadata": {
             "chr": chromosome,
@@ -62,6 +72,7 @@ async def get_gene(id: str, request: Request):
             "end": end,
             "gene_id": gene_id,
             "gene_name": gene_name,
+            "ranges": ranges,
         },
         "transcripts": new_transcripts,
     }
