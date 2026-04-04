@@ -26,4 +26,40 @@ def build_index(gtf_path: Path):
         WHERE column2 = 'exon';
         """)
 
-    return conn
+    return GeneIndex(conn)
+
+
+class GeneIndex:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def get_gene(self, gene_id) -> dict:
+        query = f"""
+        SELECT *
+        FROM gtf
+        WHERE gene_id = '{gene_id}'
+        """
+        db_result = self.conn.execute(query).fetchall()
+        if not db_result:
+            raise GeneNotFoundError(f"Gene {gene_id} not found")
+
+        result = {}
+
+        for i in db_result:
+            tx_id = i[6]
+            result[tx_id] = result.get(tx_id, list()) + [
+                {
+                    "chromosome": i[0],
+                    "start": i[1],
+                    "end": i[2],
+                    "strand": i[3],
+                    "gene_id": i[4],
+                    "gene_name": i[5],
+                }
+            ]
+
+        return result
+
+
+class GeneNotFoundError(Exception):
+    pass

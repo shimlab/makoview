@@ -5,6 +5,7 @@ from pathlib import Path
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from .utils.gff import build_index
 
@@ -20,12 +21,20 @@ def create_app(gtf_path: Path) -> FastAPI:
     app = FastAPI(title="Makoview v2", lifespan=lifespan)
     app.state.gtf_path = gtf_path
 
-    from .routes import search
+    from .routes import genes, search
 
     app.include_router(search.router, prefix="/api")
+    app.include_router(genes.router, prefix="/api")
 
     frontend_dir = Path(__file__).parent.parent / "build" / "static"
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     return app
 
