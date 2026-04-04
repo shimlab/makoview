@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRef } from "react";
 import Axis from "./axis";
 import TrackView from "./track";
-import { getTrackBounds } from "../utils/coordinates";
+import { getTrackBounds, genomicToPixel, pixelToGenomic } from "../utils/coordinates";
 
 function TrackDisplay(selected) {
   const [data, setData] = useState(null);
@@ -59,12 +59,41 @@ function TrackDisplay(selected) {
 
   const xScrollRef = useRef(null);
   const yScrollRef = useRef(null);
+  const viewportRef = useRef(null);
+  const savedCenterGenomicPos = useRef(null);
+
+  useEffect(() => {
+    if (savedCenterGenomicPos.current === null) return;
+    if (!viewportRef.current || !data) return;
+
+    const vp = viewportRef.current;
+    const newCenterPixel = genomicToPixel(
+      savedCenterGenomicPos.current,
+      data.metadata,
+      viewerSettings.scale,
+    );
+    vp.scrollLeft = newCenterPixel - vp.clientWidth / 2;
+    savedCenterGenomicPos.current = null;
+  }, [viewerSettings]);
+
+  const zoom = (factor) => {
+    if (viewportRef.current && data) {
+      const vp = viewportRef.current;
+      const centerPixel = vp.scrollLeft + vp.clientWidth / 2;
+      savedCenterGenomicPos.current = pixelToGenomic(
+        centerPixel,
+        data.metadata,
+        viewerScale,
+      );
+    }
+    setViewerScale((prev) => prev * factor);
+  };
 
   return (
     <>
       <div className="h-full w-full">
         {data !== null && (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full justify-between">
             <div className="flex flex-row gap-2 min-h-0">
               <div className="flex flex-col pl-2">
                 <div className="h-6 font-bold text-right">
@@ -92,6 +121,7 @@ function TrackDisplay(selected) {
                   metadata={data?.metadata}
                 />
                 <TrackView
+                  ref={viewportRef}
                   data={data}
                   view={viewerSettings}
                   yScrollRef={yScrollRef}
@@ -113,13 +143,13 @@ function TrackDisplay(selected) {
               <div className="text-lg">{Math.round(viewerSettings.scale)}%</div>
               <button
                 className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500"
-                onClick={() => setViewerScale(viewerScale * 1.25)}
+                onClick={() => zoom(1.25)}
               >
                 +
               </button>
               <button
                 className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500"
-                onClick={() => setViewerScale(viewerScale / 1.25)}
+                onClick={() => zoom(1 / 1.25)}
               >
                 –
               </button>

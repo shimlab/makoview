@@ -4,6 +4,10 @@ export const genomicToPixel = (genomicPos, metadata, scale) => {
   );
 };
 
+export const pixelToGenomic = (pixelPos, metadata, scale) => {
+  return (pixelPos / scale) * 1000 + getTrackBounds(metadata, scale).start;
+};
+
 export const getTrackBounds = (metadata, scale) => {
   const tickInterval = Math.round((2000 * 100) / scale);
   return {

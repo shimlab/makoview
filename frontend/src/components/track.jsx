@@ -1,7 +1,7 @@
 import { genomicToPixel } from "../utils/coordinates";
 import { useRef } from "react";
 
-function TrackView({ data, view, xScrollRef, yScrollRef }) {
+function TrackView({ data, view, xScrollRef, yScrollRef, ref }) {
   const render = (data, view) => {
     const elements = [];
     const metadata = data.metadata;
@@ -82,7 +82,7 @@ function TrackView({ data, view, xScrollRef, yScrollRef }) {
     viewportRef.current.style.cursor = "pointer";
   };
 
-  const viewportRef = useRef(null);
+  const viewportRef = ref;
 
   return (
     <div
