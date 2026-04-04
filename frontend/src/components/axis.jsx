@@ -6,12 +6,11 @@ function Axis({ ref, view, metadata }) {
     const trackBounds = getTrackBounds(metadata, view.scale);
 
     // math behind this: the goal is 200px between ticks
-    const tickInterval = (2000 * 100) / view.scale;
+    const tickInterval = Math.round((2000 * 100) / view.scale);
+    const firstTick = Math.ceil(trackBounds.start / tickInterval) * tickInterval;
     const ticks = [];
-    for (let pos = trackBounds.start; pos <= trackBounds.end; pos += 1) {
-      if (pos % tickInterval === 0) {
-        ticks.push(pos);
-      }
+    for (let pos = firstTick; pos <= trackBounds.end; pos += tickInterval) {
+      ticks.push(pos);
     }
 
     const rows = [];
