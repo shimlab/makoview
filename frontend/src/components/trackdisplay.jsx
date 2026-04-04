@@ -57,32 +57,15 @@ function TrackDisplay(selected) {
     fetchData();
   }, [selected]);
 
-  // useEffect(() => {
-  //   if (data !== null) render(data, viewerScale);
-  // }, [data, viewerScale]);
-
-  // function render(data, scale) {
-  //   console.log("rendering", data, scale);
-  //   const metadata = data.metadata;
-  //   const tx = data.transcripts;
-
-  //   const genomicToPixel = (genomicPos) =>
-  //     ((genomicPos - metadata.start) / 1000) * scale;
-
-  //   const width = ((metadata.end - metadata.start) / 1000) * scale;
-
-  //   scaleRef;
-  // }
-
   const xScrollRef = useRef(null);
   const yScrollRef = useRef(null);
 
   return (
     <>
-      <div className="h-full w-full overflow-y-scroll bg-amber-100">
+      <div className="h-full w-full">
         {data !== null && (
-          <>
-            <div className="flex flex-row gap-2 bg-amber-100 h-full">
+          <div className="flex flex-col h-full">
+            <div className="flex flex-row gap-2 min-h-0">
               <div className="flex flex-col pl-2">
                 <div className="h-6 font-bold text-right">
                   {data.metadata.chr}
@@ -116,7 +99,32 @@ function TrackDisplay(selected) {
                 />
               </div>
             </div>
-          </>
+
+            <div className="min-h-10 w-full p-2 bg-amber-100 flex flex-row text-sm items-center gap-3">
+              <div className="font-bold">Gene: {data.metadata.gene_name}</div>
+              <div className="text-xs">
+                {data.metadata.gene_id}
+                <br />
+                {data.metadata.chr} {data.metadata.start.toLocaleString()}
+                &nbsp;—&nbsp;
+                {data.metadata.end.toLocaleString()}
+              </div>
+              <div className="flex-1"></div>
+              <div className="text-lg">{Math.round(viewerSettings.scale)}%</div>
+              <button
+                className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500"
+                onClick={() => setViewerScale(viewerScale * 1.25)}
+              >
+                +
+              </button>
+              <button
+                className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500"
+                onClick={() => setViewerScale(viewerScale / 1.25)}
+              >
+                –
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </>
