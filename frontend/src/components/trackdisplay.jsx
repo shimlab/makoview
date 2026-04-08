@@ -95,6 +95,16 @@ function TrackDisplay(selected) {
     setViewerScale((prev) => prev * factor);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === '+' || e.key === '=') zoom(1.25);
+      else if (e.key === '-' || e.key === '_') zoom(1 / 1.25);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [data, viewerScale]);
+
   return (
     <>
       <div className="h-full w-full">
