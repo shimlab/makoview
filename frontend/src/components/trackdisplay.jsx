@@ -98,7 +98,18 @@ function TrackDisplay(selected) {
   return (
     <>
       <div className="h-full w-full">
-        {data !== null && (
+        {data !== null && (() => {
+          const coveredTxIds = new Set([
+            ...data.all_sites.map((s) => s.transcript_id),
+            ...data.tested_sites.map((s) => s.transcript_id),
+          ]);
+          const allTxIds = Object.keys(data.transcripts);
+          const sortedTxIds = [
+            ...allTxIds.filter((id) => coveredTxIds.has(id)),
+            ...allTxIds.filter((id) => !coveredTxIds.has(id)),
+          ];
+
+          return (
           <div className="flex flex-col h-full justify-between">
             <div className="flex flex-row gap-2 min-h-0 flex-1">
               <div className="flex flex-col pl-2">
@@ -106,17 +117,14 @@ function TrackDisplay(selected) {
                   {data.metadata.chr}
                 </div>
                 <div ref={yScrollRef} className="overflow-y-hidden pb-25">
-                  {(() => {
-                    const labelRows = [];
-                    for (const txId in data.transcripts) {
-                      labelRows.push(
-                        <div className="h-[36px] text-base/[36px]" key={txId}>
-                          {txId}
-                        </div>,
-                      );
-                    }
-                    return labelRows;
-                  })()}
+                  {sortedTxIds.map((txId) => (
+                    <div
+                      className={`h-[36px] text-base/[36px] ${coveredTxIds.has(txId) ? "" : "text-blue-300"}`}
+                      key={txId}
+                    >
+                      {txId}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -135,6 +143,8 @@ function TrackDisplay(selected) {
                   xScrollRef={xScrollRef}
                   onCursorMove={setCursorX}
                   cursorX={cursorX}
+                  sortedTxIds={sortedTxIds}
+                  coveredTxIds={coveredTxIds}
                 />
               </div>
             </div>
@@ -164,7 +174,8 @@ function TrackDisplay(selected) {
               </button>
             </div>
           </div>
-        )}
+          );
+        })()}
       </div>
     </>
   );
