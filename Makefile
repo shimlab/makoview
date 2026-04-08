@@ -11,4 +11,4 @@ build:
 
 
 dev: build
-	uv run makoview-v2 --gtf gencode.v49.annotation.gtf.gz
+	uv run makoview-v2 --gtf gencode.v49.annotation.gtf.gz --sites sites.duckdb --fits adaptive_binomial_fits.tsv

@@ -7,19 +7,21 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from .utils.gff import build_index
+from .utils.gff import GeneDatabase
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(f"Indexing GTF: {app.state.gtf_path}")
-    app.state.gtf_db = build_index(app.state.gtf_path)
+    app.state.gtf_db = GeneDatabase(app.state.gtf_path, app.state.sites_path, app.state.fits_path)
     yield
 
 
-def create_app(gtf_path: Path) -> FastAPI:
+def create_app(gtf_path: Path, sites_path: Path, fits_path: Path) -> FastAPI:
     app = FastAPI(title="Makoview v2", lifespan=lifespan)
     app.state.gtf_path = gtf_path
+    app.state.sites_path = sites_path
+    app.state.fits_path = fits_path
 
     from .routes import genes, search
 
@@ -42,11 +44,13 @@ def create_app(gtf_path: Path) -> FastAPI:
 def cli():
     parser = argparse.ArgumentParser(description="Makoview v2 genome browser")
     parser.add_argument("--gtf", required=True, help="Path to GTF file")
+    parser.add_argument("--sites", required=True, help="Path to sites.duckdb")
+    parser.add_argument("--fits", required=True, help="Path to adaptive_binomial_fits.tsv")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8001)
     args = parser.parse_args()
 
-    app = create_app(Path(args.gtf))
+    app = create_app(Path(args.gtf), Path(args.sites), Path(args.fits))
     uvicorn.run(app, host=args.host, port=args.port)
 
 

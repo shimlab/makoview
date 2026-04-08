@@ -2,6 +2,8 @@ build/*
 
 gencode.v49.annotation.gtf.gz
 gff_index.duckdb
+adaptive_binomial_fits.tsv
+sites.duckdb
 
 **/__pycache__
 
