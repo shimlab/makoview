@@ -23,7 +23,7 @@ class GeneDatabase:
         Will modify self.conn to attach the database as a readonly gtf.
 
         Schema for gtf:
-            CREATE TABLE gene_transcript (
+            CREATE TABLE transcripts (
                 gene_id VARCHAR,
                 transcript_id VARCHAR,
                 gene_type VARCHAR,

@@ -14,12 +14,7 @@ const generateTriangleCoords = (x, y, height, direction) => {
   }
 };
 
-const TrackContent = React.memo(function TrackContent({
-  data,
-  view,
-  sortedTxIds,
-  coveredTxIds,
-}) {
+const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds, coveredTxIds }) {
   const metadata = data.metadata;
 
   // Build transcript→row-index map using sorted order
@@ -41,6 +36,8 @@ const TrackContent = React.memo(function TrackContent({
 
     let start = Infinity;
     let end = -Infinity;
+
+    const posStrand = features[0].strand === "+";
     for (const feat of features) {
       const left = genomicToPixel(feat.start, metadata, view.scale);
       const right = genomicToPixel(feat.end + 1, metadata, view.scale);
@@ -59,10 +56,8 @@ const TrackContent = React.memo(function TrackContent({
         }
       }
 
-      const y = isUtrSegment
-        ? rowIdx * LINE_HEIGHT + 36
-        : rowIdx * LINE_HEIGHT + 30;
-      const height = isUtrSegment ? 12 : 24;
+      const y = isUtrSegment ? rowIdx * LINE_HEIGHT + 35 : rowIdx * LINE_HEIGHT + 30;
+      const height = isUtrSegment ? 13 : 24;
 
       // add small padding to to features to prevent gaps between adjacent features
       exonElements.push(
@@ -80,14 +75,20 @@ const TrackContent = React.memo(function TrackContent({
       end = Math.max(end, right);
     }
 
+    let trackLineFill;
+    if (covered) {
+      trackLineFill = posStrand ? "url(#track-fwd-strand)" : "url(#track-rev-strand)";
+    } else {
+      trackLineFill = posStrand ? "url(#track-fwd-strand-nocover)" : "url(#track-rev-strand-nocover)";
+    }
     trackLineElements.push(
       <rect
         key={`${txId}-line-${start}-${end}`}
         x={start}
-        y={rowIdx * LINE_HEIGHT + 41}
+        y={rowIdx * LINE_HEIGHT}
         width={end - start}
-        height={2}
-        fill={trackLineColor}
+        height={LINE_HEIGHT}
+        fill={trackLineFill}
       ></rect>,
     );
   }
@@ -123,9 +124,7 @@ const TrackContent = React.memo(function TrackContent({
     const color = isUpRegulated ? "#189649" : "#ef4444";
     const y = rowIdx * LINE_HEIGHT + 24;
 
-    const points = isUpRegulated
-      ? generateTriangleCoords(x, y, 12, "up")
-      : generateTriangleCoords(x, y, 12, "down");
+    const points = isUpRegulated ? generateTriangleCoords(x, y, 12, "up") : generateTriangleCoords(x, y, 12, "down");
 
     const fill = isSignificant ? color : `rgba(255, 255, 255, 1)`; // add transparency if not significant
 
@@ -151,17 +150,7 @@ const TrackContent = React.memo(function TrackContent({
   );
 });
 
-function TrackView({
-  data,
-  view,
-  xScrollRef,
-  yScrollRef,
-  ref,
-  onCursorMove,
-  cursorX,
-  sortedTxIds,
-  coveredTxIds,
-}) {
+function TrackView({ data, view, xScrollRef, yScrollRef, ref, onCursorMove, cursorX, sortedTxIds, coveredTxIds }) {
   const isPanning = useRef(false);
   const panStartCoords = useRef({ x: 0, y: 0 });
   const panMoveRef = useRef(null);
@@ -185,10 +174,7 @@ function TrackView({
 
   const panMove = (e) => {
     if (viewportRef.current) {
-      const pixelX =
-        e.clientX -
-        viewportRef.current.getBoundingClientRect().left +
-        viewportRef.current.scrollLeft;
+      const pixelX = e.clientX - viewportRef.current.getBoundingClientRect().left + viewportRef.current.scrollLeft;
       onCursorMove(pixelX);
     }
 
@@ -212,10 +198,7 @@ function TrackView({
 
   const cursorMove = (e) => {
     if (!isPanning.current && viewportRef.current) {
-      const pixelX =
-        e.clientX -
-        viewportRef.current.getBoundingClientRect().left +
-        viewportRef.current.scrollLeft;
+      const pixelX = e.clientX - viewportRef.current.getBoundingClientRect().left + viewportRef.current.scrollLeft;
       onCursorMove(pixelX);
     }
   };
@@ -233,21 +216,32 @@ function TrackView({
       onMouseLeave={() => onCursorMove(null)}
     >
       <svg height={svgHeight} width={view.width}>
-        <TrackContent
-          data={data}
-          view={view}
-          sortedTxIds={sortedTxIds}
-          coveredTxIds={coveredTxIds}
-        />
+        {/* define patterns for arrow track elements */}
+        <defs>
+          <pattern id="track-fwd-strand" x="0" y="0" width="20" height="54" patternUnits="userSpaceOnUse">
+            <line x1="0" x2="20" y1="41" y2="41" stroke="#999" strokeWidth="2" />
+            <polyline points="3,36 9,41 3,46" fill="none" stroke="#999" strokeWidth="2" />
+          </pattern>
+
+          <pattern id="track-fwd-strand-nocover" x="0" y="0" width="20" height="54" patternUnits="userSpaceOnUse">
+            <line x1="0" x2="20" y1="41" y2="41" stroke="#ddd" strokeWidth="2" />
+            <polyline points="3,36 9,41 3,46" fill="none" stroke="#ddd" strokeWidth="2" />
+          </pattern>
+
+          <pattern id="track-rev-strand" x="0" y="0" width="20" height="54" patternUnits="userSpaceOnUse">
+            <line x1="0" x2="20" y1="41" y2="41" stroke="#999" strokeWidth="2" />
+            <polyline points="9,36 3,41 9,46" fill="none" stroke="#999" strokeWidth="2" />
+          </pattern>
+
+          <pattern id="track-rev-strand-nocover" x="0" y="0" width="20" height="54" patternUnits="userSpaceOnUse">
+            <line x1="0" x2="20" y1="41" y2="41" stroke="#ddd" strokeWidth="2" />
+            <polyline points="9,36 3,41 9,46" fill="none" stroke="#ddd" strokeWidth="2" />
+          </pattern>
+        </defs>
+
+        <TrackContent data={data} view={view} sortedTxIds={sortedTxIds} coveredTxIds={coveredTxIds} />
         {false && cursorX !== null && (
-          <rect
-            x={Math.round(cursorX)}
-            y={0}
-            width={2}
-            height={svgHeight}
-            fill="#333"
-            pointerEvents="none"
-          />
+          <rect x={Math.round(cursorX)} y={0} width={2} height={svgHeight} fill="#333" pointerEvents="none" />
         )}
       </svg>
     </div>
