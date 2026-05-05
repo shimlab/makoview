@@ -107,7 +107,7 @@ const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds,
         y={rowIdx * LINE_HEIGHT + 22}
         width={2}
         height={32}
-        fill="#666"
+        fill="#999"
       />,
     );
   }

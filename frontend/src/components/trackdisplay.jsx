@@ -2,12 +2,8 @@ import { useState, useEffect } from "react";
 import { useRef } from "react";
 import Axis from "./axis";
 import TrackView from "./track";
-import {
-  getTrackBounds,
-  getTotalPixelWidth,
-  genomicToPixel,
-  pixelToGenomic,
-} from "../utils/coordinates";
+import InfoPanel from "./infoPanel";
+import { getTrackBounds, getTotalPixelWidth, genomicToPixel, pixelToGenomic } from "../utils/coordinates";
 
 function TrackDisplay(selected) {
   const [data, setData] = useState(null);
@@ -52,10 +48,7 @@ function TrackDisplay(selected) {
     }
 
     const fetchData = async () => {
-      const res = await fetch(
-        `http://localhost:8001/api/genes?` +
-          new URLSearchParams({ id }).toString(),
-      );
+      const res = await fetch(`http://localhost:8001/api/genes?` + new URLSearchParams({ id }).toString());
       const data = await res.json();
       setData(data);
     };
@@ -73,11 +66,7 @@ function TrackDisplay(selected) {
     if (!viewportRef.current || !data) return;
 
     const vp = viewportRef.current;
-    const newCenterPixel = genomicToPixel(
-      savedCenterGenomicPos.current,
-      data.metadata,
-      viewerSettings.scale,
-    );
+    const newCenterPixel = genomicToPixel(savedCenterGenomicPos.current, data.metadata, viewerSettings.scale);
     vp.scrollLeft = newCenterPixel - vp.clientWidth / 2;
     savedCenterGenomicPos.current = null;
   }, [viewerSettings]);
@@ -86,19 +75,14 @@ function TrackDisplay(selected) {
     if (viewportRef.current && data) {
       const vp = viewportRef.current;
       const centerPixel = vp.scrollLeft + vp.clientWidth / 2;
-      savedCenterGenomicPos.current = pixelToGenomic(
-        centerPixel,
-        data.metadata,
-        viewerScale,
-      );
+      savedCenterGenomicPos.current = pixelToGenomic(centerPixel, data.metadata, viewerScale);
     }
     setViewerScale((prev) => prev * factor);
   };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
-        return;
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
       if (e.key === "+" || e.key === "=") zoom(1.25);
       else if (e.key === "-" || e.key === "_") zoom(1 / 1.25);
     };
@@ -125,9 +109,7 @@ function TrackDisplay(selected) {
               <div className="flex flex-col h-full justify-between">
                 <div className="flex flex-row gap-2 min-h-0 flex-1">
                   <div className="flex flex-col pl-2">
-                    <div className="h-[80px] font-bold text-right text-base/[136px]">
-                      {data.metadata.chr}
-                    </div>
+                    <div className="h-[80px] font-bold text-right text-base/[136px]">{data.metadata.chr}</div>
                     <div ref={yScrollRef} className="overflow-y-hidden pb-25">
                       {sortedTxIds.map((txId) => (
                         <div
@@ -141,12 +123,7 @@ function TrackDisplay(selected) {
                   </div>
 
                   <div className="flex flex-col flex-1 min-w-0">
-                    <Axis
-                      ref={xScrollRef}
-                      view={viewerSettings}
-                      metadata={data?.metadata}
-                      cursorX={cursorX}
-                    />
+                    <Axis ref={xScrollRef} view={viewerSettings} metadata={data?.metadata} cursorX={cursorX} />
                     <TrackView
                       ref={viewportRef}
                       data={data}
@@ -161,34 +138,7 @@ function TrackDisplay(selected) {
                   </div>
                 </div>
 
-                <div className="min-h-10 w-full p-2 bg-amber-100 flex flex-row text-sm items-center gap-3">
-                  <div className="font-bold">
-                    Gene: {data.metadata.gene_name}
-                  </div>
-                  <div className="text-xs">
-                    {data.metadata.gene_id}
-                    <br />
-                    {data.metadata.chr} {data.metadata.start.toLocaleString()}
-                    &nbsp;—&nbsp;
-                    {data.metadata.end.toLocaleString()}
-                  </div>
-                  <div className="flex-1"></div>
-                  <div className="text-lg">
-                    {Math.round(viewerSettings.scale)}%
-                  </div>
-                  <button
-                    className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
-                    onClick={() => zoom(1.25)}
-                  >
-                    +
-                  </button>
-                  <button
-                    className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
-                    onClick={() => zoom(1 / 1.25)}
-                  >
-                    –
-                  </button>
-                </div>
+                <InfoPanel data={data} viewerSettings={viewerSettings} zoom={zoom} />
               </div>
             );
           })()}
