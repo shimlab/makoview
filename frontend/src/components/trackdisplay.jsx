@@ -8,6 +8,7 @@ import { getTrackBounds, getTotalPixelWidth, genomicToPixel, pixelToGenomic } fr
 function TrackDisplay(selected) {
   const [data, setData] = useState(null);
   const [cursorX, setCursorX] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
 
   // how many px should be used to render 1000 bases?
   let [viewerScale, setViewerScale] = useState(100);
@@ -134,11 +135,18 @@ function TrackDisplay(selected) {
                       cursorX={cursorX}
                       sortedTxIds={sortedTxIds}
                       coveredTxIds={coveredTxIds}
+                      setSelectedSite={setSelectedSite}
                     />
                   </div>
                 </div>
 
-                <InfoPanel data={data} viewerSettings={viewerSettings} zoom={zoom} />
+                <InfoPanel
+                  data={data}
+                  viewerSettings={viewerSettings}
+                  zoom={zoom}
+                  selectedSite={selectedSite}
+                  setSelectedSite={setSelectedSite}
+                />
               </div>
             );
           })()}

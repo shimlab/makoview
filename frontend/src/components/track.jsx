@@ -14,7 +14,7 @@ const generateTriangleCoords = (x, y, height, direction) => {
   }
 };
 
-const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds, coveredTxIds }) {
+const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds, coveredTxIds, setSelectedSite }) {
   const metadata = data.metadata;
 
   // Build transcript→row-index map using sorted order
@@ -136,6 +136,10 @@ const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds,
         fill={fill}
         strokeWidth={2}
         shapeRendering="optimiseSpeed"
+        onMouseDown={() => {
+          setSelectedSite(site);
+        }}
+        className="cursor-crosshair"
       />,
     );
   }
@@ -150,7 +154,18 @@ const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds,
   );
 });
 
-function TrackView({ data, view, xScrollRef, yScrollRef, ref, onCursorMove, cursorX, sortedTxIds, coveredTxIds }) {
+function TrackView({
+  data,
+  view,
+  xScrollRef,
+  yScrollRef,
+  ref,
+  onCursorMove,
+  cursorX,
+  sortedTxIds,
+  coveredTxIds,
+  setSelectedSite,
+}) {
   const isPanning = useRef(false);
   const panStartCoords = useRef({ x: 0, y: 0 });
   const panMoveRef = useRef(null);
@@ -185,7 +200,7 @@ function TrackView({ data, view, xScrollRef, yScrollRef, ref, onCursorMove, curs
 
   const panEnd = () => {
     isPanning.current = false;
-    viewportRef.current.style.cursor = "pointer";
+    viewportRef.current.style.cursor = "";
     onCursorMove(null);
     document.removeEventListener("mousemove", panMoveRef.current);
     document.removeEventListener("mouseup", panEndRef.current);
@@ -209,7 +224,7 @@ function TrackView({ data, view, xScrollRef, yScrollRef, ref, onCursorMove, curs
   return (
     <div
       ref={viewportRef}
-      className="overflow-scroll cursor-pointer flex-1"
+      className="overflow-scroll flex-1"
       onScroll={syncScroll}
       onMouseDown={panStart}
       onMouseMove={cursorMove}
@@ -239,7 +254,13 @@ function TrackView({ data, view, xScrollRef, yScrollRef, ref, onCursorMove, curs
           </pattern>
         </defs>
 
-        <TrackContent data={data} view={view} sortedTxIds={sortedTxIds} coveredTxIds={coveredTxIds} />
+        <TrackContent
+          data={data}
+          view={view}
+          sortedTxIds={sortedTxIds}
+          coveredTxIds={coveredTxIds}
+          setSelectedSite={setSelectedSite}
+        />
         {false && cursorX !== null && (
           <rect x={Math.round(cursorX)} y={0} width={2} height={svgHeight} fill="#333" pointerEvents="none" />
         )}
