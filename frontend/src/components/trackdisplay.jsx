@@ -97,95 +97,101 @@ function TrackDisplay(selected) {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      if (e.key === '+' || e.key === '=') zoom(1.25);
-      else if (e.key === '-' || e.key === '_') zoom(1 / 1.25);
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
+        return;
+      if (e.key === "+" || e.key === "=") zoom(1.25);
+      else if (e.key === "-" || e.key === "_") zoom(1 / 1.25);
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [data, viewerScale]);
 
   return (
     <>
       <div className="h-full w-full">
-        {data !== null && (() => {
-          const coveredTxIds = new Set([
-            ...data.all_sites.map((s) => s.transcript_id),
-            ...data.tested_sites.map((s) => s.transcript_id),
-          ]);
-          const allTxIds = Object.keys(data.transcripts);
-          const sortedTxIds = [
-            ...allTxIds.filter((id) => coveredTxIds.has(id)),
-            ...allTxIds.filter((id) => !coveredTxIds.has(id)),
-          ];
+        {data !== null &&
+          (() => {
+            const coveredTxIds = new Set([
+              ...data.all_sites.map((s) => s.transcript_id),
+              ...data.tested_sites.map((s) => s.transcript_id),
+            ]);
+            const allTxIds = Object.keys(data.transcripts);
+            const sortedTxIds = [
+              ...allTxIds.filter((id) => coveredTxIds.has(id)),
+              ...allTxIds.filter((id) => !coveredTxIds.has(id)),
+            ];
 
-          return (
-          <div className="flex flex-col h-full justify-between">
-            <div className="flex flex-row gap-2 min-h-0 flex-1">
-              <div className="flex flex-col pl-2">
-                <div className="h-[80px] font-bold text-right text-base/[136px]">
-                  {data.metadata.chr}
-                </div>
-                <div ref={yScrollRef} className="overflow-y-hidden pb-25">
-                  {sortedTxIds.map((txId) => (
-                    <div
-                      className={`h-[36px] text-base/[36px] ${coveredTxIds.has(txId) ? "" : "text-blue-300"}`}
-                      key={txId}
-                    >
-                      {txId}
+            return (
+              <div className="flex flex-col h-full justify-between">
+                <div className="flex flex-row gap-2 min-h-0 flex-1">
+                  <div className="flex flex-col pl-2">
+                    <div className="h-[80px] font-bold text-right text-base/[136px]">
+                      {data.metadata.chr}
                     </div>
-                  ))}
+                    <div ref={yScrollRef} className="overflow-y-hidden pb-25">
+                      {sortedTxIds.map((txId) => (
+                        <div
+                          className={`h-[54px] text-base/[82px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"}`}
+                          key={txId}
+                        >
+                          {txId}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <Axis
+                      ref={xScrollRef}
+                      view={viewerSettings}
+                      metadata={data?.metadata}
+                      cursorX={cursorX}
+                    />
+                    <TrackView
+                      ref={viewportRef}
+                      data={data}
+                      view={viewerSettings}
+                      yScrollRef={yScrollRef}
+                      xScrollRef={xScrollRef}
+                      onCursorMove={setCursorX}
+                      cursorX={cursorX}
+                      sortedTxIds={sortedTxIds}
+                      coveredTxIds={coveredTxIds}
+                    />
+                  </div>
+                </div>
+
+                <div className="min-h-10 w-full p-2 bg-amber-100 flex flex-row text-sm items-center gap-3">
+                  <div className="font-bold">
+                    Gene: {data.metadata.gene_name}
+                  </div>
+                  <div className="text-xs">
+                    {data.metadata.gene_id}
+                    <br />
+                    {data.metadata.chr} {data.metadata.start.toLocaleString()}
+                    &nbsp;—&nbsp;
+                    {data.metadata.end.toLocaleString()}
+                  </div>
+                  <div className="flex-1"></div>
+                  <div className="text-lg">
+                    {Math.round(viewerSettings.scale)}%
+                  </div>
+                  <button
+                    className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
+                    onClick={() => zoom(1.25)}
+                  >
+                    +
+                  </button>
+                  <button
+                    className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
+                    onClick={() => zoom(1 / 1.25)}
+                  >
+                    –
+                  </button>
                 </div>
               </div>
-
-              <div className="flex flex-col flex-1 min-w-0">
-                <Axis
-                  ref={xScrollRef}
-                  view={viewerSettings}
-                  metadata={data?.metadata}
-                  cursorX={cursorX}
-                />
-                <TrackView
-                  ref={viewportRef}
-                  data={data}
-                  view={viewerSettings}
-                  yScrollRef={yScrollRef}
-                  xScrollRef={xScrollRef}
-                  onCursorMove={setCursorX}
-                  cursorX={cursorX}
-                  sortedTxIds={sortedTxIds}
-                  coveredTxIds={coveredTxIds}
-                />
-              </div>
-            </div>
-
-            <div className="min-h-10 w-full p-2 bg-amber-100 flex flex-row text-sm items-center gap-3">
-              <div className="font-bold">Gene: {data.metadata.gene_name}</div>
-              <div className="text-xs">
-                {data.metadata.gene_id}
-                <br />
-                {data.metadata.chr} {data.metadata.start.toLocaleString()}
-                &nbsp;—&nbsp;
-                {data.metadata.end.toLocaleString()}
-              </div>
-              <div className="flex-1"></div>
-              <div className="text-lg">{Math.round(viewerSettings.scale)}%</div>
-              <button
-                className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
-                onClick={() => zoom(1.25)}
-              >
-                +
-              </button>
-              <button
-                className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
-                onClick={() => zoom(1 / 1.25)}
-              >
-                –
-              </button>
-            </div>
-          </div>
-          );
-        })()}
+            );
+          })()}
       </div>
     </>
   );

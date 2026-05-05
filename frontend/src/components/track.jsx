@@ -1,6 +1,19 @@
 import React, { useRef } from "react";
 import { genomicToPixel } from "../utils/coordinates";
 
+const LINE_HEIGHT = 54;
+
+const generateTriangleCoords = (x, y, height, direction) => {
+  // the triangle is equilateral, so b/h = 2/sqrt(3)
+  const base_half_length = 0.5773503 * height;
+
+  if (direction === "up") {
+    return `${x - base_half_length},${y} ${x + base_half_length},${y} ${x},${y - height}`;
+  } else {
+    return `${x - base_half_length},${y - height} ${x + base_half_length},${y - height} ${x},${y}`;
+  }
+};
+
 const TrackContent = React.memo(function TrackContent({
   data,
   view,
@@ -17,31 +30,48 @@ const TrackContent = React.memo(function TrackContent({
     index += 1;
   }
 
-  const intronElements = [];
+  const trackLineElements = [];
   const exonElements = [];
 
   for (const txId of sortedTxIds) {
-    const exons = data.transcripts[txId];
+    const features = data.transcripts[txId];
     const rowIdx = txRowMap.get(txId);
     const covered = coveredTxIds.has(txId);
-    const exonColor = covered ? "#93c5fd" : "#eee";
-    // const exonColor = covered ? "#2B7FFF" : "#93c5fd";
-    const intronColor = covered ? "#666" : "#bbb";
+    const trackLineColor = covered ? "#666" : "#bbb";
 
     let start = Infinity;
     let end = -Infinity;
-    for (const exon of exons) {
-      const left = genomicToPixel(exon.start, metadata, view.scale);
-      const right = genomicToPixel(exon.end, metadata, view.scale);
+    for (const feat of features) {
+      const left = genomicToPixel(feat.start, metadata, view.scale);
+      const right = genomicToPixel(feat.end + 1, metadata, view.scale);
       const width = right - left;
 
+      const isUtrSegment = feat.type.toLowerCase().includes("utr");
+      let exonColor = "#eee";
+      if (covered) {
+        // 3 different colours depending on whether a read has UTR/CDS annotations or not
+        if (isUtrSegment) {
+          exonColor = "#8ba2d3";
+        } else if (feat.type.toLowerCase().includes("cds")) {
+          exonColor = "#0D0D78";
+        } else {
+          exonColor = "#457aeb";
+        }
+      }
+
+      const y = isUtrSegment
+        ? rowIdx * LINE_HEIGHT + 36
+        : rowIdx * LINE_HEIGHT + 30;
+      const height = isUtrSegment ? 12 : 24;
+
+      // add small padding to to features to prevent gaps between adjacent features
       exonElements.push(
         <rect
-          key={`${txId}-${exon.start}-${exon.end}`}
+          key={`${txId}-${feat.start}-${feat.end}`}
           x={left}
-          y={rowIdx * 36 + 6}
+          y={y}
           width={width}
-          height={24}
+          height={height}
           fill={exonColor}
         ></rect>,
       );
@@ -50,14 +80,14 @@ const TrackContent = React.memo(function TrackContent({
       end = Math.max(end, right);
     }
 
-    intronElements.push(
+    trackLineElements.push(
       <rect
         key={`${txId}-line-${start}-${end}`}
         x={start}
-        y={rowIdx * 36 + 17}
+        y={rowIdx * LINE_HEIGHT + 41}
         width={end - start}
         height={2}
-        fill={intronColor}
+        fill={trackLineColor}
       ></rect>,
     );
   }
@@ -73,9 +103,9 @@ const TrackContent = React.memo(function TrackContent({
       <rect
         key={`sel-${site.transcript_id}-${site.chr_position}`}
         x={x - 1}
-        y={rowIdx * 36 + 6}
+        y={rowIdx * LINE_HEIGHT + 22}
         width={2}
-        height={24}
+        height={32}
         fill="#666"
       />,
     );
@@ -85,45 +115,35 @@ const TrackContent = React.memo(function TrackContent({
   const testedSiteElements = [];
   for (const site of data.tested_sites) {
     const isUpRegulated = site.estimate > 0;
-    const isSignificant = site.p_value < 0.05;
+    const isSignificant = site.bh_corrected_p_value < 0.05;
 
     const rowIdx = txRowMap.get(site.transcript_id);
     if (rowIdx === undefined) continue;
     const x = genomicToPixel(site.chr_position, metadata, view.scale);
     const color = isUpRegulated ? "#189649" : "#ef4444";
-    const y = rowIdx * 36;
+    const y = rowIdx * LINE_HEIGHT + 24;
 
     const points = isUpRegulated
-      ? `${x - 4},${y + 6} ${x + 4},${y + 6} ${x},${y - 2}`
-      : `${x - 4},${y} ${x + 4},${y} ${x},${y + 8}`;
+      ? generateTriangleCoords(x, y, 12, "up")
+      : generateTriangleCoords(x, y, 12, "down");
+
+    const fill = isSignificant ? color : `rgba(255, 255, 255, 1)`; // add transparency if not significant
+
     testedSiteElements.push(
       <polygon
         key={`test-${site.transcript_id}-${site.chr_position}`}
         points={points}
-        fill={color}
+        stroke={color}
+        fill={fill}
+        strokeWidth={2}
+        shapeRendering="optimiseSpeed"
       />,
     );
-
-    if (isSignificant) {
-      // create an asterisk shape below the triangle
-      testedSiteElements.push(
-        <text
-          key={`sig-${site.transcript_id}-${site.chr_position}`}
-          x={x}
-          y={y + 45}
-          textAnchor="middle"
-          fontSize="48"
-          fill="black"
-        >
-          *
-        </text>,
-      );
-    }
   }
 
   return (
     <g>
-      {intronElements}
+      {trackLineElements}
       {exonElements}
       {selectedSiteElements}
       {testedSiteElements}
@@ -201,7 +221,7 @@ function TrackView({
   };
 
   const transcriptCount = Object.keys(data.transcripts).length;
-  const svgHeight = transcriptCount * 36;
+  const svgHeight = transcriptCount * LINE_HEIGHT;
 
   return (
     <div
@@ -219,7 +239,7 @@ function TrackView({
           sortedTxIds={sortedTxIds}
           coveredTxIds={coveredTxIds}
         />
-        {cursorX !== null && (
+        {false && cursorX !== null && (
           <rect
             x={Math.round(cursorX)}
             y={0}
