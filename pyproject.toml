@@ -1,6 +1,6 @@
 [project]
 name = "makoview"
-version = "0.1.3"
+version = "0.2.0"
 description = "Visualise the results from Mako"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,13 +12,16 @@ dependencies = [
 ]
 
 [project.scripts]
-makoview-v2 = "backend.main:cli"
+makoview-v2 = "makoview.main:cli"
 
 [tool.uv]
 package = true
 
+[tool.hatch.build]
+artifacts = ["backend/makoview/static"]
+
 [tool.hatch.build.targets.wheel]
-packages = ["backend"]
+packages = ["backend/makoview"]
 
 [build-system]
 requires = ["hatchling"]

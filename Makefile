@@ -5,10 +5,10 @@ webdev:
 
 build:
 	cd frontend && npm run build
-	rm -r build/
-	mkdir -p build/static
-	mv frontend/dist/* build/static/
-
+	rm -rf backend/makoview/static/
+	mkdir -p backend/makoview/static
+	mv frontend/dist/* backend/makoview/static/
+	uv build
 
 dev: build
 	uv run makoview-v2 --gtf gencode.v49.annotation.gtf.gz --sites sites.duckdb --fits adaptive_binomial_fits.tsv

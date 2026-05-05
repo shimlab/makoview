@@ -1,0 +1,2 @@
+[console_scripts]
+makoview-v2 = makoview.main:cli

@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+makoview.egg-info/PKG-INFO
+makoview.egg-info/SOURCES.txt
+makoview.egg-info/dependency_links.txt
+makoview.egg-info/entry_points.txt
+makoview.egg-info/requires.txt
+makoview.egg-info/top_level.txt

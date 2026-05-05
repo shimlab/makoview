@@ -1,8 +1,11 @@
 build/*
+backend/makoview/static/
 
 adaptive_binomial_fits.tsv
 *.*db
 *.gtf*
+
+*.egg_info
 
 
 **/__pycache__

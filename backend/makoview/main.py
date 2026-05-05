@@ -30,8 +30,9 @@ def create_app(gtf_path: Path, sites_path: Path, fits_path: Path) -> FastAPI:
     app.include_router(search.router, prefix="/api")
     app.include_router(genes.router, prefix="/api")
 
-    frontend_dir = Path(__file__).parent.parent / "build" / "static"
-    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+    # static files are included in the ./static directory
+    static_dir = Path(__file__).parent / "static"
+    app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="frontend")
 
     app.add_middleware(
         CORSMiddleware,
