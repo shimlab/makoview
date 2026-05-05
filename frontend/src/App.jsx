@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import TrackDisplay from "./components/trackdisplay";
 import { useHashState } from "./utils/hashState";
 
@@ -9,6 +9,7 @@ const baseUrl = import.meta.env.PROD ? "/" : "http://localhost:8001/";
 function App() {
   const [selectedId, setSelectedId] = useHashState({ id: null });
   const [selectValue, setSelectValue] = useState(null);
+  const selectRef = useRef(null);
 
   const loadOptions = async (inputValue) => {
     if (inputValue.length < 3) return [];
@@ -20,6 +21,7 @@ function App() {
   const onChange = (selectedOption) => {
     console.log("Selected:", selectedOption);
     setSelectedId({ id: selectedOption.value[2] });
+    selectRef.current?.blur();
   };
 
   // Initialize from hash on page load
@@ -41,11 +43,10 @@ function App() {
     <>
       <section className="fixed top-0 right-0 left-0 ">
         <div className="flex flex-row gap-4 items-center bg-gray-200 h-20 px-4">
-          <div className="rounded-full bg-violet-900 text-white text-lg px-4 py-2">
-            makoview
-          </div>
+          <div className="rounded-full bg-violet-900 text-white text-lg px-4 py-2">makoview</div>
           <div className="grow">
             <AsyncSelect
+              ref={selectRef}
               className="w-full"
               placeholder="Search..."
               loadOptions={loadOptions}
