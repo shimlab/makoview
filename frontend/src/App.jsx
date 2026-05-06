@@ -1,60 +1,36 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import TrackDisplay from "./components/trackdisplay";
 import { useHashState } from "./utils/hashState";
 
-import AsyncSelect from "react-select/async";
-
-const baseUrl = import.meta.env.PROD ? "/" : "http://localhost:8001/";
+import Selector from "./components/selector";
+import logo_img from "./assets/makoview_logo.svg";
 
 function App() {
   const [selectedId, setSelectedId] = useHashState({ id: null });
   const [selectValue, setSelectValue] = useState(null);
-  const selectRef = useRef(null);
-
-  const loadOptions = async (inputValue) => {
-    if (inputValue.length < 3) return [];
-    const res = await fetch(baseUrl + `api/search?q=${inputValue}`);
-    const data = await res.json();
-    return data.map((item) => ({ value: item, label: item[0] }));
-  };
-
-  const onChange = (selectedOption) => {
-    console.log("Selected:", selectedOption);
-    setSelectedId({ id: selectedOption.value[2] });
-    selectRef.current?.blur();
-  };
-
-  // Initialize from hash on page load
-  useEffect(() => {
-    const initializeFromHash = async () => {
-      if (selectedId.id) {
-        // Prefill the select with the option
-        setSelectValue({
-          value: [selectedId.id, selectedId.id, selectedId.id],
-          label: selectedId.id,
-        });
-      }
-    };
-
-    initializeFromHash();
-  }, [selectedId.id]);
 
   return (
     <>
       <section className="fixed top-0 right-0 left-0 ">
-        <div className="flex flex-row gap-4 items-center bg-gray-200 h-20 px-4">
-          <div className="rounded-full bg-violet-900 text-white text-lg px-4 py-2">makoview</div>
-          <div className="grow">
-            <AsyncSelect
-              ref={selectRef}
-              className="w-full"
-              placeholder="Search..."
-              loadOptions={loadOptions}
-              onChange={onChange}
-              value={selectValue}
-              menuPortalTarget={document.body}
-              styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
-            ></AsyncSelect>
+        <div className="flex flex-row gap-4 items-center h-20 px-4 bg-gradient-to-b from-sky-200 via-sky-100 to-white">
+          <img src={logo_img} className="h-14" />
+          {/* <div className="rounded-full bg-violet-900 text-white text-lg px-4 py-2">makoview</div> */}
+          <Selector
+            selectedId={selectedId}
+            setSelectedId={setSelectedId}
+            selectValue={selectValue}
+            setSelectValue={setSelectValue}
+          />
+          <div className="grow" />
+          <div className="hover:underline">
+            <a href="https://shimlab.github.io/mako" target="_blank">
+              Docs ↗
+            </a>
+          </div>
+          <div className="hover:underline">
+            <a href="https://github.com/shimlab/mako" target="_blank">
+              GitHub ↗
+            </a>
           </div>
         </div>
       </section>

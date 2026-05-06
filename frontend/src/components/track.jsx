@@ -164,6 +164,7 @@ function TrackView({
   cursorX,
   sortedTxIds,
   coveredTxIds,
+  selectedSite,
   setSelectedSite,
 }) {
   const isPanning = useRef(false);
@@ -254,6 +255,11 @@ function TrackView({
           </pattern>
         </defs>
 
+        {
+          selectedSite && (
+          <rect x={genomicToPixel(selectedSite.chr_position-3, data.metadata, view.scale)} y={0} width={9} height={svgHeight} fill="#acdce3" pointerEvents="none" />
+        )}
+
         <TrackContent
           data={data}
           view={view}
@@ -261,9 +267,6 @@ function TrackView({
           coveredTxIds={coveredTxIds}
           setSelectedSite={setSelectedSite}
         />
-        {false && cursorX !== null && (
-          <rect x={Math.round(cursorX)} y={0} width={2} height={svgHeight} fill="#333" pointerEvents="none" />
-        )}
       </svg>
     </div>
   );

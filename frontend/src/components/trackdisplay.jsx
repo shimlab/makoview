@@ -114,7 +114,8 @@ function TrackDisplay(selected) {
                     <div ref={yScrollRef} className="overflow-y-hidden pb-25">
                       {sortedTxIds.map((txId) => (
                         <div
-                          className={`h-[54px] text-base/[82px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"}`}
+                          className={`h-[54px] text-base/[82px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"} ` +
+                        (selectedSite?.transcript_id === txId ? "text-blue-700 underline" : "")}
                           key={txId}
                         >
                           {txId}
@@ -135,6 +136,7 @@ function TrackDisplay(selected) {
                       cursorX={cursorX}
                       sortedTxIds={sortedTxIds}
                       coveredTxIds={coveredTxIds}
+                      selectedSite={selectedSite}
                       setSelectedSite={setSelectedSite}
                     />
                   </div>
