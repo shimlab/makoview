@@ -1,6 +1,7 @@
 #!/bin/bash
+set -euxo pipefail
 
-rm -r ./dist
+rm -rf ./dist
 npm run build
 
 # replace templates
