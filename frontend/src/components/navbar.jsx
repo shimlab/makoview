@@ -4,6 +4,13 @@ import logo_img from "../assets/makoview_logo.svg";
 
 const baseUrl = "/";
 
+window.addEventListener("pageshow", pageshowHandler);
+function pageshowHandler(event) {
+  const btn = document.querySelector("button");
+  btn.focus();
+  btn.blur();
+}
+
 function Selector({ gene_name, isDemo }) {
   const selectRef = useRef(null);
 
@@ -17,7 +24,11 @@ function Selector({ gene_name, isDemo }) {
   const onChange = (selectedOption) => {
     // setSelectedId({ id: selectedOption.value[2] });
     window.location.href = baseUrl + `gene/${selectedOption.value[2]}`;
-    selectRef.current?.blur();
+    selectRef.current?.select.clearValue();
+    document.querySelector("button").focus();
+    // setTimeout(() => selectRef.current?.blur(), 50);
+    // selectRef.current?.select.blur();
+    // selectRef.current?.blur();
   };
 
   return (
@@ -29,6 +40,7 @@ function Selector({ gene_name, isDemo }) {
         onChange={onChange}
         placeholder={gene_name}
         isDisabled={isDemo}
+        blurInputOnSelect={true}
         menuPortalTarget={document.body}
         styles={{
           menuPortal: (base) => ({
@@ -79,8 +91,17 @@ export default function Navbar({ gene_name, isDemo }) {
         <img src={logo_img} className="h-14" />
         <Selector gene_name={gene_name} isDemo={isDemo} />
         {isDemo && (
-          <div className="rounded-full bg-red-300 text-red-900 border-red-900 border-2 text-sm px-3 py-1 font-semibold">
-            Demo Mode
+          <div className="relative group">
+            <div className="rounded-full bg-red-300 text-red-900 border-red-900 border-2 text-sm px-3 py-1 font-semibold cursor-default">
+              Demo Mode
+            </div>
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-gray-800 text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+              This is a demo version with only track rendering functionality.
+              <br />
+              Search and detailed views are disabled. makoview is run after the <br />
+              output of the mako pipeline. Data for this demo run comes <br />
+              from the LongBench project: doi:10.1101/2025.09.11.675724
+            </span>
           </div>
         )}
         <div className="grow" />

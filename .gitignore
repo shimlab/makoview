@@ -1,6 +1,7 @@
 build/*
 backend/makoview/static/
 frontend/sample_data.json
+dist/
 
 adaptive_binomial_fits.tsv
 *.*db
@@ -22,6 +23,7 @@ frontend/lerna-debug.log*
 
 frontend/node_modules
 frontend/dist
+frontend/demo_dist
 frontend/dist-ssr
 *.local
 

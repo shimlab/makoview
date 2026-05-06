@@ -1,4 +1,4 @@
-.PHONY: dev build webdev
+.PHONY: dev build webdev demobuild
 
 webdev:
 	cd frontend && npm run dev
@@ -9,6 +9,9 @@ build:
 	mkdir -p backend/makoview/static
 	mv frontend/dist/* backend/makoview/static/
 	uv build
+
+demobuild:
+	cd frontend && ./make_demo_build.sh
 
 dev: build
 	uv run makoview-v2 --gtf gencode.v49.annotation.gtf.gz --sites sites.duckdb --fits adaptive_binomial_fits.tsv
