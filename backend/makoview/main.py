@@ -25,13 +25,14 @@ def create_app(gtf_path: Path, sites_path: Path, fits_path: Path) -> FastAPI:
     app.state.sites_path = sites_path
     app.state.fits_path = fits_path
 
-    from .routes import genes, search
+    from .routes import genes, search, gene_frontend
 
     app.include_router(search.router, prefix="/api")
     app.include_router(genes.router, prefix="/api")
+    app.include_router(gene_frontend.router)
 
-    # static files are included in the ./static directory
     static_dir = Path(__file__).parent / "static"
+
     app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="frontend")
 
     app.add_middleware(

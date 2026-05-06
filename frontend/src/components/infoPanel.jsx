@@ -32,7 +32,10 @@ function InfoPanel({ data, viewerSettings, zoom, selectedSite, setSelectedSite }
       <div className="">
         <AnimatedWave selectedSite={selectedSite} />
 
-        <div className="absolute left-0 w-full px-6" style={{ bottom: "75px", minHeight: "125px", maxHeight: "125px" }}>
+        <div
+          className={`absolute left-0 w-full px-6 ${selectedSite ? "" : "hidden"}`}
+          style={{ bottom: "75px", minHeight: "125px", maxHeight: "125px" }}
+        >
           {selectedSite && (
             <div className="flex flex-row gap-4 text-white">
               <CloseArrow onClose={() => setSelectedSite(null)} />

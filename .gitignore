@@ -1,5 +1,6 @@
 build/*
 backend/makoview/static/
+frontend/sample_data.json
 
 adaptive_binomial_fits.tsv
 *.*db

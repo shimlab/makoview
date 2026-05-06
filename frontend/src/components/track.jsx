@@ -255,9 +255,15 @@ function TrackView({
           </pattern>
         </defs>
 
-        {
-          selectedSite && (
-          <rect x={genomicToPixel(selectedSite.chr_position-3, data.metadata, view.scale)} y={0} width={9} height={svgHeight} fill="#acdce3" pointerEvents="none" />
+        {selectedSite && (
+          <rect
+            x={genomicToPixel(selectedSite.chr_position, data.metadata, view.scale) - 4}
+            y={0}
+            width={9}
+            height={svgHeight}
+            fill="#acdce3"
+            pointerEvents="none"
+          />
         )}
 
         <TrackContent

@@ -5,8 +5,7 @@ import TrackView from "./track";
 import InfoPanel from "./infoPanel";
 import { getTrackBounds, getTotalPixelWidth, genomicToPixel, pixelToGenomic } from "../utils/coordinates";
 
-function TrackDisplay(selected) {
-  const [data, setData] = useState(null);
+function TrackDisplay({ data }) {
   const [cursorX, setCursorX] = useState(null);
   const [selectedSite, setSelectedSite] = useState(null);
 
@@ -39,23 +38,6 @@ function TrackDisplay(selected) {
       scale: viewerScale,
     });
   }, [data, viewerScale]);
-
-  useEffect(() => {
-    const id = selected.selected.id || null;
-    console.log("fetching data for", id);
-    if (id === null) {
-      setData(null);
-      return;
-    }
-
-    const fetchData = async () => {
-      const res = await fetch(`http://localhost:8001/api/genes?` + new URLSearchParams({ id }).toString());
-      const data = await res.json();
-      setData(data);
-    };
-
-    fetchData();
-  }, [selected]);
 
   const xScrollRef = useRef(null);
   const yScrollRef = useRef(null);
@@ -114,8 +96,10 @@ function TrackDisplay(selected) {
                     <div ref={yScrollRef} className="overflow-y-hidden pb-25">
                       {sortedTxIds.map((txId) => (
                         <div
-                          className={`h-[54px] text-base/[82px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"} ` +
-                        (selectedSite?.transcript_id === txId ? "text-blue-700 underline" : "")}
+                          className={
+                            `h-[54px] text-base/[82px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"} ` +
+                            (selectedSite?.transcript_id === txId ? "text-blue-700 underline" : "")
+                          }
                           key={txId}
                         >
                           {txId}
