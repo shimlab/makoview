@@ -10,12 +10,12 @@ function TrackDisplay({ data }) {
   const [selectedSite, setSelectedSite] = useState(null);
 
   // how many px should be used to render 1000 bases?
-  let [viewerScale, setViewerScale] = useState(100);
+  let [viewerScale, setViewerScale] = useState(200);
   let [viewerSettings, setViewerSettings] = useState({
     start_bp: 0,
     end_bp: 0,
     width: 0,
-    scale: 100,
+    scale: 200,
   });
 
   // compute viewerSettings
@@ -78,10 +78,7 @@ function TrackDisplay({ data }) {
       <div className="h-full w-full">
         {data !== null &&
           (() => {
-            const coveredTxIds = new Set([
-              ...data.all_sites.map((s) => s.transcript_id),
-              ...data.tested_sites.map((s) => s.transcript_id),
-            ]);
+            const coveredTxIds = new Set([...data.sites.map((s) => s.transcript_id)]);
             const allTxIds = Object.keys(data.transcripts);
             const sortedTxIds = [
               ...allTxIds.filter((id) => coveredTxIds.has(id)),

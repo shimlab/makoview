@@ -93,63 +93,88 @@ const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds,
     );
   }
 
-  // Gray bars for selected sites
-  const selectedSiteElements = [];
-  for (const site of data.all_sites) {
-    if (!site.selected) continue;
+  // Show sites
+  const siteMarkers = [];
+  const siteBars = [];
+  for (const site of data.sites) {
     const rowIdx = txRowMap.get(site.transcript_id);
     if (rowIdx === undefined) continue;
     const x = genomicToPixel(site.chr_position, metadata, view.scale);
-    selectedSiteElements.push(
+    const isTested = !(site.test === null);
+
+    siteBars.push(
       <rect
         key={`sel-${site.transcript_id}-${site.chr_position}`}
         x={x - 1}
-        y={rowIdx * LINE_HEIGHT + 22}
+        y={rowIdx * LINE_HEIGHT + 15}
         width={2}
-        height={32}
+        height={39}
         fill="#999"
       />,
     );
-  }
 
-  // Triangles for tested sites
-  const testedSiteElements = [];
-  for (const site of data.tested_sites) {
-    const isUpRegulated = site.estimate > 0;
-    const isSignificant = site.bh_corrected_p_value < 0.05;
+    if (isTested) {
+      const isUpRegulated = site.test.estimate > 0;
+      const isSignificant = site.test.bh_corrected_p_value < 0.05;
 
-    const rowIdx = txRowMap.get(site.transcript_id);
-    if (rowIdx === undefined) continue;
-    const x = genomicToPixel(site.chr_position, metadata, view.scale);
-    const color = isUpRegulated ? "#189649" : "#ef4444";
-    const y = rowIdx * LINE_HEIGHT + 24;
+      const color = isUpRegulated ? "#189649" : "#ef4444";
 
-    const points = isUpRegulated ? generateTriangleCoords(x, y, 12, "up") : generateTriangleCoords(x, y, 12, "down");
+      const marker_y = rowIdx * LINE_HEIGHT + 24;
+      const points = isUpRegulated
+        ? generateTriangleCoords(x, marker_y, 12, "up")
+        : generateTriangleCoords(x, marker_y, 12, "down");
 
-    const fill = isSignificant ? color : `rgba(255, 255, 255, 1)`; // add transparency if not significant
+      const fill = isSignificant ? color : `rgba(255, 255, 255, 1)`; // add transparency if not significant
 
-    testedSiteElements.push(
-      <polygon
-        key={`test-${site.transcript_id}-${site.chr_position}`}
-        points={points}
-        stroke={color}
-        fill={fill}
-        strokeWidth={2}
-        shapeRendering="optimiseSpeed"
-        onMouseDown={() => {
-          setSelectedSite(site);
-        }}
-        className="cursor-crosshair"
-      />,
-    );
+      const siteInfo = {
+        transcript_id: site.transcript_id,
+        transcript_position: site.transcript_position,
+        chr: site.chr,
+        chr_position: site.chr_position,
+        ...site.test,
+      };
+
+      siteMarkers.push(
+        <polygon
+          key={`test-${site.transcript_id}-${site.chr_position}`}
+          points={points}
+          stroke={color}
+          fill={fill}
+          strokeWidth={2}
+          shapeRendering="optimiseSpeed"
+          onMouseDown={() => {
+            setSelectedSite(siteInfo);
+          }}
+          className="cursor-crosshair"
+        />,
+      );
+    }
+
+    // add transparent click target
+    else {
+      siteBars.push(
+        <rect
+          key={`sel-click-${site.transcript_id}-${site.chr_position}`}
+          x={x - 4}
+          y={rowIdx * LINE_HEIGHT + 13}
+          width={8}
+          height={14}
+          fill="transparent"
+          onMouseDown={() => {
+            setSelectedSite(site);
+          }}
+          className="cursor-crosshair"
+        />,
+      );
+    }
   }
 
   return (
     <g>
       {trackLineElements}
       {exonElements}
-      {selectedSiteElements}
-      {testedSiteElements}
+      {siteBars}
+      {siteMarkers}
     </g>
   );
 });

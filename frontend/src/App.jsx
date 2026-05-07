@@ -4,12 +4,19 @@ import { useHashState } from "./utils/hashState";
 
 import Navbar from "./components/navbar";
 
+const data = window.__DATA__;
+const isDemo = window.__DEMO__;
+
+// change title on page load
+if (isDemo) {
+  document.title = `makoview: demo`;
+} else if (data?.metadata?.gene_name) {
+  document.title = `makoview: ${data.metadata.gene_name}`;
+}
+
 function App() {
   const [selectedId, setSelectedId] = useHashState({ id: null });
   const [selectValue, setSelectValue] = useState(null);
-
-  const data = window.__DATA__;
-  const isDemo = window.__DEMO__;
 
   return (
     <>

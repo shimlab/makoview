@@ -1,0 +1,1 @@
+curl http://localhost:8001/api/genes?id=ENSG00000112715.26 > ./frontend/sample_data.json

@@ -23,6 +23,11 @@ const SITE_FIELDS = {
   test_statistic: { label: "Test statistic", format: (v) => v?.toFixed(6) },
   estimate: { label: "Estimate", format: (v) => v?.toFixed(6) },
   std_err: { label: "Std err", format: (v) => v?.toFixed(6) },
+  sample_count: { label: "Samples covered" },
+  total_read_count: { label: "Reads covered" },
+  max_prob: { label: "Max site p'bty", format: (v) => v?.toFixed(6) },
+  min_prob: { label: "Min site p'bty", format: (v) => v?.toFixed(6) },
+  avg_probability_modified: { label: "Avg site p'bty", format: (v) => v?.toFixed(6) },
 };
 
 function InfoPanel({ data, viewerSettings, zoom, selectedSite, setSelectedSite }) {
@@ -37,7 +42,7 @@ function InfoPanel({ data, viewerSettings, zoom, selectedSite, setSelectedSite }
           style={{ bottom: "75px", minHeight: "125px", maxHeight: "125px" }}
         >
           {selectedSite && (
-            <div className="flex flex-row gap-4 text-white">
+            <div className="flex flex-row gap-4 text-white items-start">
               <CloseArrow onClose={() => setSelectedSite(null)} />
 
               {Object.keys(selectedSite)
@@ -53,7 +58,7 @@ function InfoPanel({ data, viewerSettings, zoom, selectedSite, setSelectedSite }
                         const { label, format } = SITE_FIELDS[key];
                         return (
                           <tr key={key}>
-                            <td className="pr-1 font-semibold opacity-85 text-sm uppercase">{label}</td>
+                            <td className="pr-4 font-semibold opacity-85 text-sm uppercase">{label}</td>
                             <td>{format ? format(selectedSite[key]) : selectedSite[key]}</td>
                           </tr>
                         );

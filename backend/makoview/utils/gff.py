@@ -154,43 +154,47 @@ class GeneDatabase:
         }
         return metadata, transcript_features
 
-    def get_tested_sites(self, transcript_ids: list[str]) -> list:
+    def get_sites(self, transcript_ids: list[str]) -> list:
+        tested_sites = self.get_test_results(transcript_ids)
+        all_sites = self.get_site_information(transcript_ids)
+
+        tested_site_dict = {
+            (site["transcript_id"], site["transcript_position"]): site
+            for site in tested_sites
+        }
+        for site in all_sites:
+            test_result = tested_site_dict.get(
+                (site["transcript_id"], site["transcript_position"])
+            )
+            site["test"] = test_result
+
+        return all_sites
+
+    def get_test_results(self, transcript_ids: list[str]) -> list:
         """Return statistically-tested sites from the fits table."""
         if not transcript_ids:
             return []
         placeholders = ", ".join("?" * len(transcript_ids))
-        rows = self.conn.execute(
+        res = self.conn.execute(
             f"""
-            SELECT transcript_id, transcript_position, chr, chr_position,
-                   estimate, std_err, test_statistic, p_value, model_type, bh_corrected_p_value
+            SELECT transcript_id, transcript_position, chr, chr_position, model_type,
+                   p_value, bh_corrected_p_value, test_statistic, estimate, std_err
             FROM fits
             WHERE transcript_id IN ({placeholders})
             ORDER BY transcript_id, transcript_position
         """,
             transcript_ids,
-        ).fetchall()
-        return [
-            {
-                "transcript_id": row[0],
-                "transcript_position": row[1],
-                "chr": row[2],
-                "chr_position": int(row[3]),
-                "estimate": row[4],
-                "std_err": row[5],
-                "test_statistic": row[6],
-                "p_value": row[7],
-                "model_type": row[8],
-                "bh_corrected_p_value": row[9],
-            }
-            for row in rows
-        ]
+        )
+        columns = [desc[0] for desc in res.description]
+        return [dict(zip(columns, row)) for row in res.fetchall()]
 
-    def get_all_sites(self, transcript_ids: list[str]) -> list:
+    def get_site_information(self, transcript_ids: list[str]) -> list:
         """Return all candidate DRACH sites from sites_db.sites."""
         if not transcript_ids:
             return []
         placeholders = ", ".join("?" * len(transcript_ids))
-        rows = self.conn.execute(
+
+        res = self.conn.execute(
             f"""
             SELECT transcript_id, transcript_position, chr, chr_position,
                    sample_count, total_read_count, max_prob, min_prob,
@@ -200,22 +204,9 @@ class GeneDatabase:
             ORDER BY transcript_id, transcript_position
         """,
             transcript_ids,
-        ).fetchall()
-        return [
-            {
-                "transcript_id": row[0],
-                "transcript_position": row[1],
-                "chr": row[2],
-                "chr_position": row[3],
-                "sample_count": row[4],
-                "total_read_count": row[5],
-                "max_prob": row[6],
-                "min_prob": row[7],
-                "avg_probability_modified": row[8],
-                "selected": row[9],
-            }
-            for row in rows
-        ]
+        )
+        columns = [desc[0] for desc in res.description]
+        return [dict(zip(columns, row)) for row in res.fetchall()]
 
     def get_gene_data(self, gene_id) -> dict:
         metadata, transcripts = self._process_gene(gene_id)
@@ -223,8 +214,7 @@ class GeneDatabase:
         return {
             "metadata": metadata,
             "transcripts": transcripts,
-            "tested_sites": self.get_tested_sites(transcript_ids),
-            "all_sites": self.get_all_sites(transcript_ids),
+            "sites": self.get_sites(transcript_ids),
         }
 
 
