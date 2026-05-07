@@ -1,3 +1,5 @@
+import memoize from "memoize";
+
 const INTRON_PIXEL_WIDTH = 20;
 
 const buildSegments = (metadata, scale) => {
@@ -51,8 +53,7 @@ export const genomicToPixel = (genomicPos, metadata, scale) => {
 
   for (const seg of segments) {
     if (genomicPos >= seg.genomicStart && genomicPos <= seg.genomicEnd) {
-      const fraction =
-        (genomicPos - seg.genomicStart) / (seg.genomicEnd - seg.genomicStart);
+      const fraction = (genomicPos - seg.genomicStart) / (seg.genomicEnd - seg.genomicStart);
       return Math.round(seg.pixelStart + fraction * seg.pixelWidth);
     }
   }

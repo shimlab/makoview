@@ -5,6 +5,7 @@ dist/
 adaptive_binomial_fits.tsv
 *.*db
 *.gtf*
+*.fa*
 
 *.egg_info
 

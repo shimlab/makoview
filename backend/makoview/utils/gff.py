@@ -3,10 +3,14 @@ import duckdb
 import os
 from pathlib import Path
 from .split_transcript import Exon, split_tx_into_regions, get_ranges
+from .motifs import DRACH
+from pyfaidx import Fasta
 
 
 class GeneDatabase:
-    def __init__(self, gtf_path: Path, sites_path: Path, fits_path: Path):
+    def __init__(
+        self, gtf_path: Path, sites_path: Path, fits_path: Path, genome_ref_path: Path
+    ):
         self.conn = duckdb.connect(":memory:")
         self.conn.execute(f"ATTACH '{sites_path}' AS sites_db (READ_ONLY)")
         self.conn.execute(f"""
@@ -15,6 +19,9 @@ class GeneDatabase:
         """)
 
         self.create_gene_annotation_db(gtf_path, gtf_path.with_suffix(".db"))
+
+        print("Indexing genome reference...")
+        self.genes = Fasta(genome_ref_path)
 
     def create_gene_annotation_db(self, gtf_path: Path, db_path: Path):
         """
@@ -141,11 +148,14 @@ class GeneDatabase:
             # fmt: on
 
         # get metadata
-        chromosome = transcript_features.values().__iter__().__next__()[0].chromosome
+        first_exon = transcript_features.values().__iter__().__next__()[0]
+        chromosome = first_exon.chromosome
+        strand = first_exon.strand
         ranges = get_ranges([x for xs in transcript_features.values() for x in xs])
 
         metadata = {
             "chr": chromosome,
+            "strand": strand,
             "start": ranges[0][0],
             "end": ranges[-1][1],
             "gene_id": gene_id,
@@ -210,12 +220,45 @@ class GeneDatabase:
 
     def get_gene_data(self, gene_id) -> dict:
         metadata, transcripts = self._process_gene(gene_id)
+
         transcript_ids = list(transcripts.keys())
         return {
             "metadata": metadata,
             "transcripts": transcripts,
             "sites": self.get_sites(transcript_ids),
+            "candidate_sites": self.get_candidate_sites(gene_id, metadata),
         }
+
+    def get_candidate_sites(self, gene_id, metadata) -> list[int]:
+        chr = metadata["chr"]
+        chr_start = metadata["start"]
+        chr_end = metadata["end"]
+        strand = metadata["strand"]
+
+        motif_set = set(DRACH())
+        sequence = str(self.genes[chr][chr_start - 1 : chr_end]).upper()
+
+        positions = []
+        if strand == "-":
+            _comp = str.maketrans("ACGT", "TGCA")
+            sequence = sequence.translate(_comp)[::-1]
+            for r_start, r_end in metadata["ranges"]:
+                i_start = chr_end - r_end
+                i_end = chr_end - r_start
+                for i in range(i_start, i_end - 3):
+                    candidate_seq = sequence[i : i + 5]
+                    if candidate_seq in motif_set:
+                        positions.append([chr_start - i - 2, candidate_seq])
+        else:
+            for r_start, r_end in metadata["ranges"]:
+                i_start = r_start - chr_start
+                i_end = r_end - chr_start
+                for i in range(i_start, i_end - 3):
+                    candidate_seq = sequence[i : i + 5]
+                    if candidate_seq in motif_set:
+                        positions.append([chr_start + i + 2, candidate_seq])
+
+        return positions
 
 
 class GeneNotFoundError(Exception):

@@ -8,6 +8,7 @@ import { getTrackBounds, getTotalPixelWidth, genomicToPixel, pixelToGenomic } fr
 function TrackDisplay({ data }) {
   const [cursorX, setCursorX] = useState(null);
   const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedTrackPos, setSelectedTrackPos] = useState(null);
 
   // how many px should be used to render 1000 bases?
   let [viewerScale, setViewerScale] = useState(200);
@@ -17,6 +18,14 @@ function TrackDisplay({ data }) {
     width: 0,
     scale: 200,
   });
+
+  useEffect(() => {
+    if (selectedSite) {
+      setSelectedTrackPos(genomicToPixel(selectedSite?.chr_position, data.metadata, viewerSettings.scale));
+    } else {
+      setSelectedTrackPos(null);
+    }
+  }, [selectedSite, data, viewerSettings.scale]);
 
   // compute viewerSettings
   useEffect(() => {
@@ -88,9 +97,10 @@ function TrackDisplay({ data }) {
             return (
               <div className="flex flex-col h-full justify-between">
                 <div className="flex flex-row gap-2 min-h-0 flex-1">
-                  <div className="flex flex-col pl-2">
-                    <div className="h-[80px] font-bold text-right text-base/[136px]">{data.metadata.chr}</div>
-                    <div ref={yScrollRef} className="overflow-y-hidden pb-25">
+                  <div className="relative pl-2">
+                    <div className="absolute top-[32px] right-0 italic text-sm text-right">DRACH motifs</div>
+                    <div className="absolute top-[60px] right-0 font-bold text-right">{data.metadata.chr}</div>
+                    <div ref={yScrollRef} className="overflow-y-hidden pb-25 mt-[80px]">
                       {sortedTxIds.map((txId) => (
                         <div
                           className={
@@ -106,7 +116,13 @@ function TrackDisplay({ data }) {
                   </div>
 
                   <div className="flex flex-col flex-1 min-w-0">
-                    <Axis ref={xScrollRef} view={viewerSettings} metadata={data?.metadata} cursorX={cursorX} />
+                    <Axis
+                      ref={xScrollRef}
+                      view={viewerSettings}
+                      data={data}
+                      cursorX={cursorX}
+                      selectedTrackPos={selectedTrackPos}
+                    />
                     <TrackView
                       ref={viewportRef}
                       data={data}
@@ -117,7 +133,7 @@ function TrackDisplay({ data }) {
                       cursorX={cursorX}
                       sortedTxIds={sortedTxIds}
                       coveredTxIds={coveredTxIds}
-                      selectedSite={selectedSite}
+                      selectedTrackPos={selectedTrackPos}
                       setSelectedSite={setSelectedSite}
                     />
                   </div>

@@ -22,7 +22,7 @@ const SITE_FIELDS = {
   bh_corrected_p_value: { label: "BH corrected p-value", format: formatPValue },
   test_statistic: { label: "Test statistic", format: (v) => v?.toFixed(6) },
   estimate: { label: "Estimate", format: (v) => v?.toFixed(6) },
-  std_err: { label: "Std err", format: (v) => v?.toFixed(6) },
+  std_err: { label: "Standard error", format: (v) => v?.toFixed(6) },
   sample_count: { label: "Samples covered" },
   total_read_count: { label: "Reads covered" },
   max_prob: { label: "Max site p'bty", format: (v) => v?.toFixed(6) },

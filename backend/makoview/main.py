@@ -14,16 +14,22 @@ from .utils.gff import GeneDatabase
 async def lifespan(app: FastAPI):
     print(f"Indexing GTF: {app.state.gtf_path}")
     app.state.gtf_db = GeneDatabase(
-        app.state.gtf_path, app.state.sites_path, app.state.fits_path
+        app.state.gtf_path,
+        app.state.sites_path,
+        app.state.fits_path,
+        app.state.genome_ref_path,
     )
     yield
 
 
-def create_app(gtf_path: Path, sites_path: Path, fits_path: Path) -> FastAPI:
+def create_app(
+    gtf_path: Path, sites_path: Path, fits_path: Path, genome_ref_path: Path
+) -> FastAPI:
     app = FastAPI(title="Makoview v2", lifespan=lifespan)
     app.state.gtf_path = gtf_path
     app.state.sites_path = sites_path
     app.state.fits_path = fits_path
+    app.state.genome_ref_path = genome_ref_path
 
     from .routes import genes, search, gene_frontend
 
@@ -54,9 +60,15 @@ def cli():
     )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8001)
+    parser.add_argument(
+        "--genome", required=True, help="Path to genome reference fasta"
+    )
+
     args = parser.parse_args()
 
-    app = create_app(Path(args.gtf), Path(args.sites), Path(args.fits))
+    app = create_app(
+        Path(args.gtf), Path(args.sites), Path(args.fits), Path(args.genome)
+    )
     uvicorn.run(app, host=args.host, port=args.port)
 
 

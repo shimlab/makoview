@@ -43,7 +43,7 @@ def get_ranges(features: list[Exon]) -> list[tuple[int, int]]:
     ranges = []
 
     for s, e in all_intervals:
-        if ranges and s <= ranges[-1][1]:
+        if ranges and s <= ranges[-1][1] + 1:
             ranges[-1][1] = max(ranges[-1][1], e)
         else:
             ranges.append([s, e])
