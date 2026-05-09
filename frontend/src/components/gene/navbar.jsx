@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import AsyncSelect from "react-select/async";
-import logo_img from "../assets/makoview_logo.svg";
+import logo_img from "../../assets/makoview_logo.svg";
 
 const baseUrl = "/";
 
@@ -11,7 +11,7 @@ function pageshowHandler(event) {
   btn.blur();
 }
 
-function Selector({ gene_name, isDemo }) {
+export function Selector({ gene_name, isDemo }) {
   const selectRef = useRef(null);
 
   const loadOptions = async (inputValue) => {

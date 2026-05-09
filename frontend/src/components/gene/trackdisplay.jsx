@@ -3,7 +3,7 @@ import { useRef } from "react";
 import Axis from "./axis";
 import TrackView from "./track";
 import InfoPanel from "./infoPanel";
-import { getTrackBounds, getTotalPixelWidth, genomicToPixel, pixelToGenomic } from "../utils/coordinates";
+import { getTrackBounds, getTotalPixelWidth, genomicToPixel, pixelToGenomic } from "../../utils/coordinates";
 
 function TrackDisplay({ data }) {
   const [cursorX, setCursorX] = useState(null);
@@ -100,7 +100,7 @@ function TrackDisplay({ data }) {
                   <div className="relative pl-2">
                     <div className="absolute top-[32px] right-0 italic text-sm text-right">DRACH motifs</div>
                     <div className="absolute top-[60px] right-0 font-bold text-right">{data.metadata.chr}</div>
-                    <div ref={yScrollRef} className="overflow-y-hidden pb-25 mt-[80px]">
+                    <div ref={yScrollRef} className="pb-25 mt-[80px]">
                       {sortedTxIds.map((txId) => (
                         <div
                           className={

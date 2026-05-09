@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { genomicToPixel } from "../utils/coordinates";
+import { genomicToPixel } from "../../utils/coordinates";
 
 const LINE_HEIGHT = 54;
 
@@ -234,6 +234,8 @@ function TrackView({
 
   const syncScroll = (e) => {
     xScrollRef.current.scrollLeft = e.target.scrollLeft;
+    console.log(e.target.scrollTop);
+    console.log(yScrollRef);
     yScrollRef.current.scrollTop = e.target.scrollTop;
   };
 

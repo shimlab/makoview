@@ -29,10 +29,16 @@ function sampleDataInjectionPlugin() {
 }
 
 export default defineConfig({
+  server: {
+    proxy: {
+      "/api": "http://localhost:8001",
+    },
+  },
   build: {
     rollupOptions: {
       input: {
         main: resolve(import.meta.dirname, "_template.html"),
+        index: resolve(import.meta.dirname, "index.html"),
       },
     },
   },

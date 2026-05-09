@@ -1,5 +1,5 @@
 import React from "react";
-import { genomicToPixel, getTrackBounds, pixelToGenomic } from "../utils/coordinates";
+import { genomicToPixel, getTrackBounds, pixelToGenomic } from "../../utils/coordinates";
 
 const AxisContent = React.memo(function AxisContent({ view, data }) {
   const metadata = data?.metadata;

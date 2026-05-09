@@ -1,8 +1,8 @@
 import { useState } from "react";
-import TrackDisplay from "./components/trackdisplay";
+import TrackDisplay from "./components/gene/trackdisplay";
 import { useHashState } from "./utils/hashState";
 
-import Navbar from "./components/navbar";
+import Navbar from "./components/gene/navbar";
 
 const data = window.__DATA__;
 const isDemo = window.__DEMO__;
