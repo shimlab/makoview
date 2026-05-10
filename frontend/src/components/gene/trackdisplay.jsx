@@ -5,7 +5,14 @@ import Axis from "./axis";
 import TrackView from "./track";
 import InfoPanel from "./infoPanel";
 import { pixelToGenomic, genomicToPixel } from "../../utils/coordinates";
-import { dataAtom, viewerScaleAtom, viewerSettingsAtom, cursorXAtom, selectedSiteAtom, selectedTrackPosAtom } from "../../store";
+import {
+  dataAtom,
+  viewerScaleAtom,
+  viewerSettingsAtom,
+  cursorXAtom,
+  selectedSiteAtom,
+  selectedTrackPosAtom,
+} from "../../store";
 
 function TrackDisplay() {
   const data = useAtomValue(dataAtom);
@@ -67,7 +74,7 @@ function TrackDisplay() {
                   <div className="relative pl-2">
                     <div className="absolute top-[32px] right-0 italic text-sm text-right">DRACH motifs</div>
                     <div className="absolute top-[60px] right-0 font-bold text-right">{data.metadata.chr}</div>
-                    <div ref={yScrollRef} className="pb-25 mt-[80px]">
+                    <div ref={yScrollRef} className="pb-25 mt-[80px] overflow-y-hidden h-full">
                       {sortedTxIds.map((txId) => (
                         <div
                           className={
