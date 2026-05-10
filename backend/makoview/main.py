@@ -18,24 +18,32 @@ async def lifespan(app: FastAPI):
         app.state.sites_path,
         app.state.fits_path,
         app.state.genome_ref_path,
+        app.state.reads_path,
     )
     yield
 
 
 def create_app(
-    gtf_path: Path, sites_path: Path, fits_path: Path, genome_ref_path: Path
+    gtf_path: Path,
+    sites_path: Path,
+    fits_path: Path,
+    genome_ref_path: Path,
+    reads_path: Path,
 ) -> FastAPI:
     app = FastAPI(title="Makoview v2", lifespan=lifespan)
     app.state.gtf_path = gtf_path
     app.state.sites_path = sites_path
     app.state.fits_path = fits_path
     app.state.genome_ref_path = genome_ref_path
+    app.state.reads_path = reads_path
 
-    from .routes import genes, search, gene_frontend
+    from .routes import genes, search, gene_frontend, plot
 
     app.include_router(search.router, prefix="/api")
     app.include_router(genes.router, prefix="/api")
     app.include_router(gene_frontend.router)
+
+    app.include_router(plot.router, prefix="/plot")
 
     static_dir = Path(__file__).parent / "static"
 
@@ -63,11 +71,16 @@ def cli():
     parser.add_argument(
         "--genome", required=True, help="Path to genome reference fasta"
     )
+    parser.add_argument("--reads", required=True, help="Path to reads.duckdb")
 
     args = parser.parse_args()
 
     app = create_app(
-        Path(args.gtf), Path(args.sites), Path(args.fits), Path(args.genome)
+        Path(args.gtf),
+        Path(args.sites),
+        Path(args.fits),
+        Path(args.genome),
+        Path(args.reads),
     )
     uvicorn.run(app, host=args.host, port=args.port)
 

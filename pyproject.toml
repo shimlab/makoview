@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.135.2",
     "pydantic>=2",
     "pyfaidx>=0.9.0.4",
+    "seaborn>=0.13",
     "uvicorn[standard]>=0.42.0",
 ]
 

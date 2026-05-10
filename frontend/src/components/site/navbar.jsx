@@ -71,7 +71,7 @@ export function IsoformSelector() {
     // TODO: replace with the actual destination URL
     const transcriptId = selectedTranscript.value;
     const position = selectedPosition.value;
-    window.location.href = baseUrl + `isoform/${transcriptId}/${position}`;
+    window.location.href = baseUrl + `site/${transcriptId}/${position}`;
   };
 
   const handlePositionKeyDown = (e) => {

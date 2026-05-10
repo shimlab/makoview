@@ -9,10 +9,16 @@ from pyfaidx import Fasta
 
 class GeneDatabase:
     def __init__(
-        self, gtf_path: Path, sites_path: Path, fits_path: Path, genome_ref_path: Path
+        self,
+        gtf_path: Path,
+        sites_path: Path,
+        fits_path: Path,
+        genome_ref_path: Path,
+        reads_path: Path,
     ):
         self.conn = duckdb.connect(":memory:")
         self.conn.execute(f"ATTACH '{sites_path}' AS sites_db (READ_ONLY)")
+        self.conn.execute(f"ATTACH '{reads_path}' AS reads_db (READ_ONLY)")
         self.conn.execute(f"""
             CREATE TABLE fits AS
             SELECT * FROM read_csv('{fits_path}', delim='\t', header=true)
@@ -259,6 +265,21 @@ class GeneDatabase:
                         positions.append([chr_start + i + 2, candidate_seq])
 
         return positions
+
+
+    def get_sample_site_data(self, transcript_id: str, position: int) -> list[dict]:
+        res = self.conn.execute(
+            """
+            SELECT r.sample_name, r.group_name, r.probability_modified
+            FROM reads_db.reads r
+            INNER JOIN sites_db.sites s
+                ON r.rname = s.rname AND r.transcript_position = s.transcript_position
+            WHERE s.transcript_id = ? AND s.transcript_position = ?
+        """,
+            [transcript_id, position],
+        )
+        columns = [d[0] for d in res.description]
+        return [dict(zip(columns, row)) for row in res.fetchall()]
 
 
 class GeneNotFoundError(Exception):

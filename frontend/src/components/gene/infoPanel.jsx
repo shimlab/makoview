@@ -119,6 +119,15 @@ function InfoPanel({ zoom }) {
                     </tbody>
                   </table>
                 ))}
+
+              <div className="grow" />
+              <a
+                className="self-center rounded-xl border-white border-2 w-35 h-25 flex items-center justify-center text-lg font-medium hover:bg-white hover:text-blue-900 transition-colors"
+                href={`/site/${selectedSite.transcript_id}/${selectedSite.transcript_position}`}
+                target="_blank"
+              >
+                Inspect site →
+              </a>
             </div>
           )}
         </div>
