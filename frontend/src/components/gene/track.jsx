@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { genomicToPixel } from "../../utils/coordinates";
-import { dataAtom, viewerSettingsAtom, cursorXAtom, selectedTrackPosAtom, selectedSiteAtom } from "../../store";
+import { dataAtom, viewerSettingsAtom, cursorXAtom, selectedTrackPosAtom, selectedSiteAtom, displayOptionsAtom } from "../../store";
 
 const LINE_HEIGHT = 54;
 
@@ -20,6 +20,7 @@ const TrackContent = React.memo(function TrackContent({ sortedTxIds, coveredTxId
   const data = useAtomValue(dataAtom);
   const view = useAtomValue(viewerSettingsAtom);
   const setSelectedSite = useSetAtom(selectedSiteAtom);
+  const displayOptions = useAtomValue(displayOptionsAtom);
 
   const metadata = data.metadata;
 
@@ -107,6 +108,11 @@ const TrackContent = React.memo(function TrackContent({ sortedTxIds, coveredTxId
     if (rowIdx === undefined) continue;
     const x = genomicToPixel(site.chr_position, metadata, view.scale);
     const isTested = !(site.test === null);
+    const isSignificant = isTested && site.test.bh_corrected_p_value < 0.05;
+
+    if (!isTested && !displayOptions.untestedSites) continue;
+    if (isTested && !isSignificant && !displayOptions.nonSignificantSites) continue;
+    if (isTested && isSignificant && !displayOptions.significantSites) continue;
 
     siteBars.push(
       <rect
@@ -121,7 +127,6 @@ const TrackContent = React.memo(function TrackContent({ sortedTxIds, coveredTxId
 
     if (isTested) {
       const isUpRegulated = site.test.estimate > 0;
-      const isSignificant = site.test.bh_corrected_p_value < 0.05;
 
       const color = isUpRegulated ? "#189649" : "#ef4444";
 

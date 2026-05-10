@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import { getTrackBounds, getTotalPixelWidth, genomicToPixel } from "./utils/coordinates";
 
 export const dataAtom = atom(window.__DATA__);
@@ -16,6 +17,12 @@ export const viewerSettingsAtom = atom((get) => {
   const metadata = data.metadata;
   const coords = getTrackBounds(metadata, scale);
   return { start_bp: coords.start, end_bp: coords.end, width: getTotalPixelWidth(metadata, scale), scale };
+});
+
+export const displayOptionsAtom = atomWithStorage("makoview-display-options", {
+  untestedSites: true,
+  nonSignificantSites: true,
+  significantSites: true,
 });
 
 export const selectedTrackPosAtom = atom((get) => {

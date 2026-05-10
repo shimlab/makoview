@@ -1,6 +1,7 @@
 import { useAtomValue, useAtom } from "jotai";
+import { useState, useEffect, useRef } from "react";
 import { AnimatedWave, StaticWave, CloseArrow } from "./infoPanelSvgs";
-import { dataAtom, viewerSettingsAtom, selectedSiteAtom } from "../../store";
+import { dataAtom, viewerSettingsAtom, selectedSiteAtom, displayOptionsAtom } from "../../store";
 
 const formatPValue = (v) => {
   if (v === null || v === undefined) return null;
@@ -31,6 +32,52 @@ const SITE_FIELDS = {
   min_prob: { label: "Min site p'bty", format: (v) => v?.toFixed(6) },
   avg_probability_modified: { label: "Avg site p'bty", format: (v) => v?.toFixed(6) },
 };
+
+function OptionsMenu() {
+  const [options, setOptions] = useAtom(displayOptionsAtom);
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const toggle = (key) => setOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const items = [
+    { key: "untestedSites", label: "Untested sites" },
+    { key: "nonSignificantSites", label: "Non-significant sites" },
+    { key: "significantSites", label: "Significant sites" },
+  ];
+
+  return (
+    <div className="relative mr-8" ref={ref}>
+      <button
+        className={`text-md font-bold min-h-8 px-2 rounded-md border-none cursor-pointer whitespace-nowrap
+          ${open ? "bg-sky-50" : ""} hover:bg-sky-50 transition-colors duration-100`}
+        onMouseDown={() => setOpen((v) => !v)}
+      >
+        Options ↑
+      </button>
+      {open && (
+        <div className="absolute bottom-full mb-2 right-0 z-50 bg-white border border-gray-300 rounded-xl shadow min-w-52 p-2">
+          <div className="text-xs font-semibold uppercase text-gray-500 px-1 mb-1">Display</div>
+          {items.map(({ key, label }) => (
+            <label key={key} className="flex items-center gap-2 cursor-pointer py-0.5 px-1 rounded hover:bg-gray-100">
+              <input type="checkbox" checked={options[key]} onChange={() => toggle(key)} />
+              {label}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function InfoPanel({ zoom }) {
   const data = useAtomValue(dataAtom);
@@ -88,6 +135,7 @@ function InfoPanel({ zoom }) {
             {data.metadata.end.toLocaleString()}
           </div>
           <div className="flex-1"></div>
+          <OptionsMenu />
           <div className="text-lg">{Math.round(viewerSettings.scale)}%</div>
           <button
             className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
