@@ -266,6 +266,67 @@ class GeneDatabase:
 
         return positions
 
+    def get_site_info(self, transcript_id: str, position: int) -> dict | None:
+        """Return all information for a single modification site, or None if not found.
+
+        Returns a dict with three keys:
+
+        - site: aggregated statistics from sites_db.sites:
+            transcript_id, transcript_position, chr, chr_position,
+            rname, sample_count, total_read_count, max_prob,
+            min_prob, avg_probability_modified, selected.
+
+        - test: statistical fit results from the fits table:
+            transcript_id, transcript_position, chr, chr_position,
+            model_type, p_value, bh_corrected_p_value,
+            test_statistic, estimate, std_err.
+            None if the site was not statistically tested.
+
+        - reads: list of per-sample entries, each with:
+            sample_name, group_name, and probabilities_modified (list of float) —
+            one element per read at this site for that sample/group combination.
+        """
+        site_res = self.conn.execute(
+            """
+            SELECT transcript_id, transcript_position, chr, chr_position, rname,
+                   sample_count, total_read_count, max_prob, min_prob,
+                   avg_probability_modified, selected
+            FROM sites_db.sites
+            WHERE transcript_id = ? AND transcript_position = ?
+        """,
+            [transcript_id, position],
+        )
+        cols = [d[0] for d in site_res.description]
+        row = site_res.fetchone()
+        if row is None:
+            return None
+        site_info = dict(zip(cols, row))
+
+        test_res = self.conn.execute(
+            """
+            SELECT transcript_id, transcript_position, chr, chr_position, model_type,
+                   p_value, bh_corrected_p_value, test_statistic, estimate, std_err
+            FROM fits
+            WHERE transcript_id = ? AND transcript_position = ?
+        """,
+            [transcript_id, position],
+        )
+        test_cols = [d[0] for d in test_res.description]
+        test_row = test_res.fetchone()
+        test_info = dict(zip(test_cols, test_row)) if test_row else None
+
+        raw_reads = self.get_sample_site_data(transcript_id, position)
+
+        reads_grouped: dict[tuple, list] = {}
+        for r in raw_reads:
+            key = (r["sample_name"], r["group_name"])
+            reads_grouped.setdefault(key, []).append(r["probability_modified"])
+        reads = [
+            {"sample_name": k[0], "group_name": k[1], "probabilities_modified": v}
+            for k, v in reads_grouped.items()
+        ]
+
+        return {"site": site_info, "test": test_info, "reads": reads}
 
     def get_sample_site_data(self, transcript_id: str, position: int) -> list[dict]:
         res = self.conn.execute(

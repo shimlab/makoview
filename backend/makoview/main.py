@@ -37,10 +37,11 @@ def create_app(
     app.state.genome_ref_path = genome_ref_path
     app.state.reads_path = reads_path
 
-    from .routes import genes, search, gene_frontend, plot
+    from .routes import genes, search, gene_frontend, plot, site
 
     app.include_router(search.router, prefix="/api")
     app.include_router(genes.router, prefix="/api")
+    app.include_router(site.router, prefix="/api")
     app.include_router(gene_frontend.router)
 
     app.include_router(plot.router, prefix="/plot")
