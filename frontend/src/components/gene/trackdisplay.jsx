@@ -1,52 +1,19 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRef } from "react";
+import { useAtom, useAtomValue } from "jotai";
 import Axis from "./axis";
 import TrackView from "./track";
 import InfoPanel from "./infoPanel";
-import { getTrackBounds, getTotalPixelWidth, genomicToPixel, pixelToGenomic } from "../../utils/coordinates";
+import { pixelToGenomic, genomicToPixel } from "../../utils/coordinates";
+import { dataAtom, viewerScaleAtom, viewerSettingsAtom, cursorXAtom, selectedSiteAtom, selectedTrackPosAtom } from "../../store";
 
-function TrackDisplay({ data }) {
-  const [cursorX, setCursorX] = useState(null);
-  const [selectedSite, setSelectedSite] = useState(null);
-  const [selectedTrackPos, setSelectedTrackPos] = useState(null);
-
-  // how many px should be used to render 1000 bases?
-  let [viewerScale, setViewerScale] = useState(200);
-  let [viewerSettings, setViewerSettings] = useState({
-    start_bp: 0,
-    end_bp: 0,
-    width: 0,
-    scale: 200,
-  });
-
-  useEffect(() => {
-    if (selectedSite) {
-      setSelectedTrackPos(genomicToPixel(selectedSite?.chr_position, data.metadata, viewerSettings.scale));
-    } else {
-      setSelectedTrackPos(null);
-    }
-  }, [selectedSite, data, viewerSettings.scale]);
-
-  // compute viewerSettings
-  useEffect(() => {
-    if (data === null) return;
-    if (viewerScale === null) return;
-
-    const metadata = data.metadata;
-    const coords = getTrackBounds(metadata, viewerScale);
-
-    const start_bp = coords.start;
-    const end_bp = coords.end;
-
-    const width = getTotalPixelWidth(metadata, viewerScale);
-
-    setViewerSettings({
-      start_bp,
-      end_bp,
-      width,
-      scale: viewerScale,
-    });
-  }, [data, viewerScale]);
+function TrackDisplay() {
+  const data = useAtomValue(dataAtom);
+  const [viewerScale, setViewerScale] = useAtom(viewerScaleAtom);
+  const viewerSettings = useAtomValue(viewerSettingsAtom);
+  const [cursorX, setCursorX] = useAtom(cursorXAtom);
+  const [selectedSite, setSelectedSite] = useAtom(selectedSiteAtom);
+  const selectedTrackPos = useAtomValue(selectedTrackPosAtom);
 
   const xScrollRef = useRef(null);
   const yScrollRef = useRef(null);
@@ -116,36 +83,18 @@ function TrackDisplay({ data }) {
                   </div>
 
                   <div className="flex flex-col flex-1 min-w-0">
-                    <Axis
-                      ref={xScrollRef}
-                      view={viewerSettings}
-                      data={data}
-                      cursorX={cursorX}
-                      selectedTrackPos={selectedTrackPos}
-                    />
+                    <Axis ref={xScrollRef} />
                     <TrackView
                       ref={viewportRef}
-                      data={data}
-                      view={viewerSettings}
                       yScrollRef={yScrollRef}
                       xScrollRef={xScrollRef}
-                      onCursorMove={setCursorX}
-                      cursorX={cursorX}
                       sortedTxIds={sortedTxIds}
                       coveredTxIds={coveredTxIds}
-                      selectedTrackPos={selectedTrackPos}
-                      setSelectedSite={setSelectedSite}
                     />
                   </div>
                 </div>
 
-                <InfoPanel
-                  data={data}
-                  viewerSettings={viewerSettings}
-                  zoom={zoom}
-                  selectedSite={selectedSite}
-                  setSelectedSite={setSelectedSite}
-                />
+                <InfoPanel zoom={zoom} />
               </div>
             );
           })()}

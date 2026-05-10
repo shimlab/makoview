@@ -1,4 +1,6 @@
+import { useAtomValue, useAtom } from "jotai";
 import { AnimatedWave, StaticWave, CloseArrow } from "./infoPanelSvgs";
+import { dataAtom, viewerSettingsAtom, selectedSiteAtom } from "../../store";
 
 const formatPValue = (v) => {
   if (v === null || v === undefined) return null;
@@ -30,7 +32,11 @@ const SITE_FIELDS = {
   avg_probability_modified: { label: "Avg site p'bty", format: (v) => v?.toFixed(6) },
 };
 
-function InfoPanel({ data, viewerSettings, zoom, selectedSite, setSelectedSite }) {
+function InfoPanel({ zoom }) {
+  const data = useAtomValue(dataAtom);
+  const viewerSettings = useAtomValue(viewerSettingsAtom);
+  const [selectedSite, setSelectedSite] = useAtom(selectedSiteAtom);
+
   return (
     <div className="w-full">
       <div className="w-full" style={{ minHeight: selectedSite ? "250px" : "110px" }}></div>

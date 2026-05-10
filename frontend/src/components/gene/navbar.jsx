@@ -1,6 +1,8 @@
 import { useRef } from "react";
+import { useAtomValue } from "jotai";
 import AsyncSelect from "react-select/async";
 import logo_img from "../../assets/makoview_logo.svg";
+import { dataAtom, isDemoAtom } from "../../store";
 
 const baseUrl = "/";
 
@@ -11,7 +13,10 @@ function pageshowHandler(event) {
   btn.blur();
 }
 
-export function Selector({ gene_name, isDemo }) {
+export function Selector() {
+  const gene_name = useAtomValue(dataAtom)?.metadata?.gene_name;
+  const isDemo = useAtomValue(isDemoAtom);
+
   const selectRef = useRef(null);
 
   const loadOptions = async (inputValue) => {
@@ -84,18 +89,20 @@ export function Selector({ gene_name, isDemo }) {
   );
 }
 
-export default function Navbar({ gene_name, isDemo }) {
+export default function Navbar() {
+  const isDemo = useAtomValue(isDemoAtom);
+
   return (
-    <section className="fixed top-0 right-0 left-0 ">
+    <section className="fixed top-0 right-0 left-0 z-10">
       <div className="flex flex-row gap-4 items-center h-20 px-4 bg-linear-to-b from-sky-200 via-sky-100 to-white">
         <img src={logo_img} className="h-14" />
-        <Selector gene_name={gene_name} isDemo={isDemo} />
+        <Selector />
         {isDemo && (
           <div className="relative group">
             <div className="rounded-full bg-red-300 text-red-900 border-red-900 border-2 text-sm px-3 py-1 font-semibold cursor-default">
               Demo Mode
             </div>
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-gray-800 text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-gray-800 text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
               This is a demo version with only track rendering functionality.
               <br />
               Search and detailed views are disabled. makoview is run after the <br />

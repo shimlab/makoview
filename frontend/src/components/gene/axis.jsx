@@ -1,5 +1,7 @@
 import React from "react";
+import { useAtomValue } from "jotai";
 import { genomicToPixel, getTrackBounds, pixelToGenomic } from "../../utils/coordinates";
+import { dataAtom, viewerSettingsAtom, cursorXAtom, selectedTrackPosAtom } from "../../store";
 
 const AxisContent = React.memo(function AxisContent({ view, data }) {
   const metadata = data?.metadata;
@@ -48,7 +50,12 @@ const AxisContent = React.memo(function AxisContent({ view, data }) {
   return <g>{rows}</g>;
 });
 
-function Axis({ ref, view, data, cursorX, selectedTrackPos }) {
+function Axis({ ref }) {
+  const view = useAtomValue(viewerSettingsAtom);
+  const data = useAtomValue(dataAtom);
+  const cursorX = useAtomValue(cursorXAtom);
+  const selectedTrackPos = useAtomValue(selectedTrackPosAtom);
+
   let cursorElements = [];
 
   if (cursorX !== null) {

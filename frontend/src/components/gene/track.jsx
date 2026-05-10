@@ -1,5 +1,7 @@
 import React, { useRef } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
 import { genomicToPixel } from "../../utils/coordinates";
+import { dataAtom, viewerSettingsAtom, cursorXAtom, selectedTrackPosAtom, selectedSiteAtom } from "../../store";
 
 const LINE_HEIGHT = 54;
 
@@ -14,7 +16,11 @@ const generateTriangleCoords = (x, y, height, direction) => {
   }
 };
 
-const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds, coveredTxIds, setSelectedSite }) {
+const TrackContent = React.memo(function TrackContent({ sortedTxIds, coveredTxIds }) {
+  const data = useAtomValue(dataAtom);
+  const view = useAtomValue(viewerSettingsAtom);
+  const setSelectedSite = useSetAtom(selectedSiteAtom);
+
   const metadata = data.metadata;
 
   // Build transcript→row-index map using sorted order
@@ -179,19 +185,12 @@ const TrackContent = React.memo(function TrackContent({ data, view, sortedTxIds,
   );
 });
 
-function TrackView({
-  data,
-  view,
-  xScrollRef,
-  yScrollRef,
-  ref,
-  onCursorMove,
-  cursorX,
-  sortedTxIds,
-  coveredTxIds,
-  selectedTrackPos,
-  setSelectedSite,
-}) {
+function TrackView({ xScrollRef, yScrollRef, ref, sortedTxIds, coveredTxIds }) {
+  const data = useAtomValue(dataAtom);
+  const view = useAtomValue(viewerSettingsAtom);
+  const selectedTrackPos = useAtomValue(selectedTrackPosAtom);
+  const setCursorX = useSetAtom(cursorXAtom);
+
   const isPanning = useRef(false);
   const panStartCoords = useRef({ x: 0, y: 0 });
   const panMoveRef = useRef(null);
@@ -216,7 +215,7 @@ function TrackView({
   const panMove = (e) => {
     if (viewportRef.current) {
       const pixelX = e.clientX - viewportRef.current.getBoundingClientRect().left + viewportRef.current.scrollLeft;
-      onCursorMove(pixelX);
+      setCursorX(pixelX);
     }
 
     if (!isPanning.current) return;
@@ -227,7 +226,7 @@ function TrackView({
   const panEnd = () => {
     isPanning.current = false;
     viewportRef.current.style.cursor = "";
-    onCursorMove(null);
+    setCursorX(null);
     document.removeEventListener("mousemove", panMoveRef.current);
     document.removeEventListener("mouseup", panEndRef.current);
   };
@@ -242,7 +241,7 @@ function TrackView({
   const cursorMove = (e) => {
     if (!isPanning.current && viewportRef.current) {
       const pixelX = e.clientX - viewportRef.current.getBoundingClientRect().left + viewportRef.current.scrollLeft;
-      onCursorMove(pixelX);
+      setCursorX(pixelX);
     }
   };
 
@@ -256,7 +255,7 @@ function TrackView({
       onScroll={syncScroll}
       onMouseDown={panStart}
       onMouseMove={cursorMove}
-      onMouseLeave={() => onCursorMove(null)}
+      onMouseLeave={() => setCursorX(null)}
     >
       <svg height={svgHeight} width={view.width}>
         {/* define patterns for arrow track elements */}
@@ -286,13 +285,7 @@ function TrackView({
           <rect x={selectedTrackPos - 4} y={0} width={9} height={svgHeight} fill="#acdce3" pointerEvents="none" />
         )}
 
-        <TrackContent
-          data={data}
-          view={view}
-          sortedTxIds={sortedTxIds}
-          coveredTxIds={coveredTxIds}
-          setSelectedSite={setSelectedSite}
-        />
+        <TrackContent sortedTxIds={sortedTxIds} coveredTxIds={coveredTxIds} />
       </svg>
     </div>
   );
