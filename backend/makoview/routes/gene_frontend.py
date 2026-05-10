@@ -12,7 +12,7 @@ router = APIRouter()
 
 static_dir = Path(__file__).parent.parent / "static"
 
-TEMPLATE_DATA = (static_dir / "_template.html").read_text()
+TEMPLATE_DATA = (static_dir / "_gene_template.html").read_text()
 ta = TypeAdapter(dict)
 
 @router.get("/gene/{gene_id}")

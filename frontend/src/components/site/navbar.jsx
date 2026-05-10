@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import AsyncSelect from "react-select/async";
 import Select from "react-select";
+import logo_img from "../../assets/makoview_logo.svg";
 
 const baseUrl = "/";
 
@@ -28,7 +29,7 @@ const selectStyles = {
   }),
 };
 
-export function IsoformSelector() {
+export function IsoformSelector({ defaultSite = null }) {
   const transcriptRef = useRef(null);
   const positionRef = useRef(null);
 
@@ -62,13 +63,19 @@ export function IsoformSelector() {
     }
   };
 
+  useEffect(() => {
+    if (defaultSite) {
+      onTranscriptChange({ value: defaultSite.id, label: defaultSite.id });
+      setSelectedPosition({ value: defaultSite.position, label: defaultSite.position });
+    }
+  }, []);
+
   const onPositionChange = (selectedOption) => {
     setSelectedPosition(selectedOption);
   };
 
   const navigate = () => {
     if (!selectedTranscript || !selectedPosition) return;
-    // TODO: replace with the actual destination URL
     const transcriptId = selectedTranscript.value;
     const position = selectedPosition.value;
     window.location.href = baseUrl + `site/${transcriptId}/${position}`;
@@ -130,5 +137,29 @@ export function IsoformSelector() {
         →
       </button>
     </div>
+  );
+}
+
+export default function SiteNavbar({ defaultSite }) {
+  return (
+    <section className="fixed top-0 right-0 left-0 z-10">
+      <div className="flex flex-row gap-4 items-center h-20 px-4 bg-linear-to-b from-sky-200 via-sky-100 to-white">
+        <a href="/">
+          <img src={logo_img} className="h-14" />
+        </a>
+        <IsoformSelector defaultSite={defaultSite} />
+        <div className="grow" />
+        <div className="hover:underline">
+          <a href="https://shimlab.github.io/mako" target="_blank">
+            Docs ↗
+          </a>
+        </div>
+        <div className="hover:underline">
+          <a href="https://github.com/shimlab/mako" target="_blank">
+            GitHub ↗
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
