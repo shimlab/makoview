@@ -1,7 +1,7 @@
 import { useAtomValue, useAtom } from "jotai";
 import { useState, useEffect, useRef } from "react";
 import { AnimatedWave, StaticWave, CloseArrow } from "./infoPanelSvgs";
-import { dataAtom, viewerSettingsAtom, selectedSiteAtom, displayOptionsAtom } from "../../store";
+import { dataAtom, viewerSettingsAtom, selectedSiteAtom, displayOptionsAtom, isDemoAtom } from "../../store";
 
 const formatPValue = (v) => {
   if (v === null || v === undefined) return null;
@@ -36,6 +36,7 @@ const SITE_FIELDS = {
 function OptionsMenu() {
   const [options, setOptions] = useAtom(displayOptionsAtom);
   const [open, setOpen] = useState(false);
+
   const ref = useRef(null);
 
   useEffect(() => {
@@ -83,6 +84,7 @@ function InfoPanel({ zoom }) {
   const data = useAtomValue(dataAtom);
   const viewerSettings = useAtomValue(viewerSettingsAtom);
   const [selectedSite, setSelectedSite] = useAtom(selectedSiteAtom);
+  const isDemo = useAtomValue(isDemoAtom);
 
   return (
     <div className="w-full">
@@ -121,13 +123,15 @@ function InfoPanel({ zoom }) {
                 ))}
 
               <div className="grow" />
-              <a
-                className="self-center rounded-xl border-white border-2 w-35 h-25 flex items-center justify-center text-lg font-medium hover:bg-white hover:text-blue-900 transition-colors"
-                href={`/site/${selectedSite.transcript_id}/${selectedSite.transcript_position}`}
-                target="_blank"
-              >
-                Inspect site →
-              </a>
+              {!isDemo && (
+                <a
+                  className="self-center rounded-xl border-white border-2 w-35 h-25 flex items-center justify-center text-lg font-medium hover:bg-white hover:text-blue-900 transition-colors"
+                  href={`/site/${selectedSite.transcript_id}/${selectedSite.transcript_position}`}
+                  target="_blank"
+                >
+                  Inspect site →
+                </a>
+              )}
             </div>
           )}
         </div>
