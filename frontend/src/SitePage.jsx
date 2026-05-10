@@ -16,6 +16,8 @@ const SITE_FIELDS = [
   ["max_prob", "Max probability"],
   ["min_prob", "Min probability"],
   ["selected", "Selected"],
+  ["gene_id", "Gene ID"],
+  ["gene_name", "Gene name"],
 ];
 
 const TEST_FIELDS = [
@@ -79,11 +81,16 @@ export default function SitePage() {
       <SiteNavbar ref={navbarRef} defaultSite={{ id: site.transcript_id, position: site.transcript_position }} />
 
       <div className="pt-24 px-6 pb-8 max-w-screen-xl mx-auto">
-        <div className="mb-4">
+        <div className="mb-4 flex flex-row gap-8 items-baseline">
           <h1 className="text-xl font-semibold">
             {site.transcript_id}
             <span className="text-gray-400 font-normal"> · position {site.transcript_position}</span>
           </h1>
+          {site.gene_id && (
+            <a href={`/gene/${site.gene_id}`} className="text-sm text-blue-600 hover:underline" target="_blank">
+              Go to gene: {site.gene_name ? `${site.gene_name} (${site.gene_id})` : site.gene_id} →
+            </a>
+          )}
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">

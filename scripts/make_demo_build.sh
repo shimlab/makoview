@@ -9,7 +9,7 @@ python -c "
 import sys, json
 data = open('sample/site.json').read()
 html = sys.stdin.read()
-print(html.replace('__VITE_DATA__', data).replace('window.__DEMO__ = false;', 'window.__DEMO__ = true;'))
+print(html.replace('__VITE_SITE_DATA__', data).replace('window.__DEMO__ = false;', 'window.__DEMO__ = true;'))
 " < dist/_site_template.html > dist/site.html
 
 

@@ -274,7 +274,7 @@ class GeneDatabase:
         - site: aggregated statistics from sites_db.sites:
             transcript_id, transcript_position, chr, chr_position,
             rname, sample_count, total_read_count, max_prob,
-            min_prob, avg_probability_modified, selected.
+            min_prob, avg_probability_modified, selected, gene_id, gene_name.
 
         - test: statistical fit results from the fits table:
             transcript_id, transcript_position, chr, chr_position,
@@ -325,6 +325,13 @@ class GeneDatabase:
             {"sample_name": k[0], "group_name": k[1], "probabilities_modified": v}
             for k, v in reads_grouped.items()
         ]
+
+        gene_res = self.conn.execute(
+            "SELECT gene_id, gene_name FROM gtf.transcripts WHERE transcript_id = ? LIMIT 1",
+            [transcript_id],
+        ).fetchone()
+        site_info["gene_id"] = gene_res[0] if gene_res else None
+        site_info["gene_name"] = gene_res[1] if gene_res else None
 
         return {"site": site_info, "test": test_info, "reads": reads}
 
