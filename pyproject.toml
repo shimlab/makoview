@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-makoview-v2 = "makoview.main:cli"
+makoview = "makoview.main:cli"
 
 [tool.uv]
 package = true

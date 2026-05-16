@@ -14,7 +14,7 @@ demobuild:
 	cd frontend && ../scripts/make_demo_build.sh
 
 dev: build
-	uv run makoview-v2 \
+	uv run makoview \
 		--gtf gencode.v49.annotation.gtf.gz \
 		--sites sites.duckdb \
 		--fits adaptive_binomial_fits.tsv \
