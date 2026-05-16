@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useAtomValue } from "jotai";
 import TrackDisplay from "./components/gene/trackdisplay";
 import Navbar from "./components/gene/navbar";
+import OptionsBar from "./components/gene/options";
 import { dataAtom, isDemoAtom } from "./store";
 
 function App() {
@@ -20,8 +21,12 @@ function App() {
     <>
       <Navbar />
 
+      <section className="fixed top-20 right-0 left-0">
+        <OptionsBar />
+      </section>
+
       <section>
-        <div className="fixed top-20 right-0 left-0 bottom-0">
+        <div className="fixed top-30 right-0 left-0 bottom-0">
           <TrackDisplay />
         </div>
       </section>

@@ -20,8 +20,8 @@ export const viewerSettingsAtom = atom((get) => {
 });
 
 export const displayOptionsAtom = atomWithStorage("makoview-display-options", {
-  untestedSites: true,
-  nonSignificantSites: true,
+  untestedSites: false,
+  nonSignificantSites: false,
   significantSites: true,
 });
 

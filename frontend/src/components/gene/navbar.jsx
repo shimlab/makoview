@@ -95,7 +95,9 @@ export default function Navbar() {
   return (
     <section className="fixed top-0 right-0 left-0 z-10">
       <div className="flex flex-row gap-4 items-center h-20 px-4 bg-linear-to-b from-sky-200 via-sky-100 to-white">
-        <img src={logo_img} className="h-14" />
+        <a href="../">
+          <img src={logo_img} className="h-14" />
+        </a>
         <Selector />
         {isDemo && (
           <div className="relative group">
