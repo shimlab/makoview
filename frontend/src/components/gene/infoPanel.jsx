@@ -1,6 +1,9 @@
+import { useEffect, useRef } from "react";
 import { useAtomValue, useAtom } from "jotai";
 import { AnimatedWave, StaticWave, CloseArrow } from "./infoPanelSvgs";
-import { dataAtom, viewerSettingsAtom, selectedSiteAtom, isDemoAtom } from "../../store";
+import { pixelToGenomic, genomicToPixel } from "../../utils/coordinates";
+import { dataAtom, selectedSiteAtom, isDemoAtom } from "../../store";
+import { useViewerSettings } from "../../utils/useViewerSettings";
 
 const formatPValue = (v) => {
   if (v === null || v === undefined) return null;
@@ -32,12 +35,33 @@ const SITE_FIELDS = {
   avg_probability_modified: { label: "Avg site p'bty", format: (v) => v?.toFixed(6) },
 };
 
-
-function InfoPanel({ zoom }) {
+function InfoPanel() {
   const data = useAtomValue(dataAtom);
-  const viewerSettings = useAtomValue(viewerSettingsAtom);
+  const { scale, viewport, setScale, setViewportScroll } = useViewerSettings();
   const [selectedSite, setSelectedSite] = useAtom(selectedSiteAtom);
   const isDemo = useAtomValue(isDemoAtom);
+
+  const scrollLeft = viewport.px.start;
+  const clientWidth = viewport.px.end - viewport.px.start;
+
+  const zoom = (factor) => {
+    const center_bp = pixelToGenomic(scrollLeft + clientWidth / 2);
+    setScale((prev) => prev * factor);
+    setViewportScroll({ scrollLeft: genomicToPixel(center_bp) - clientWidth / 2, clientWidth });
+  };
+
+  const zoomRef = useRef(null);
+  zoomRef.current = zoom;
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "+" || e.key === "=") zoomRef.current(1.25);
+      else if (e.key === "-" || e.key === "_") zoomRef.current(1 / 1.25);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <div className="w-full">
@@ -101,7 +125,7 @@ function InfoPanel({ zoom }) {
             {data.metadata.end.toLocaleString()}
           </div>
           <div className="flex-1"></div>
-          <div className="text-lg">{Math.round(viewerSettings.scale)}%</div>
+          <div className="text-lg">{Math.round(scale)}%</div>
           <button
             className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
             onClick={() => zoom(1.25)}

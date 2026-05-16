@@ -9,8 +9,12 @@ const baseUrl = "/";
 window.addEventListener("pageshow", pageshowHandler);
 function pageshowHandler(event) {
   const btn = document.querySelector("button");
-  btn.focus();
-  btn.blur();
+  if (btn !== null) {
+    btn.focus();
+    btn.blur();
+  } else {
+    console.error("Button not found for focus/blur in pageshow event");
+  }
 }
 
 export function Selector() {

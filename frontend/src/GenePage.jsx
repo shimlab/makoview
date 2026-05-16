@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useAtomValue } from "jotai";
-import TrackDisplay from "./components/gene/trackdisplay";
+import TrackDisplay from "./components/gene/track/trackdisplay";
 import Navbar from "./components/gene/navbar";
 import OptionsBar from "./components/gene/options";
+import TrackRenderer from "./components/gene/render";
+import InfoPanel from "./components/gene/infoPanel";
 import { dataAtom, isDemoAtom } from "./store";
 
 function App() {
@@ -26,8 +28,11 @@ function App() {
       </section>
 
       <section>
-        <div className="fixed top-30 right-0 left-0 bottom-0">
-          <TrackDisplay />
+        <div className="fixed top-30 right-0 left-0 bottom-0 flex flex-col">
+          <div className="flex-1 min-h-0">
+            <TrackDisplay renderer={TrackRenderer} />
+          </div>
+          <InfoPanel />
         </div>
       </section>
     </>

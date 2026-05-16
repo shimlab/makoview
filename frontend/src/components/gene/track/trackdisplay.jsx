@@ -3,58 +3,22 @@ import { useRef } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import Axis from "./axis";
 import TrackView from "./track";
-import InfoPanel from "./infoPanel";
-import { pixelToGenomic, genomicToPixel } from "../../utils/coordinates";
-import {
-  dataAtom,
-  viewerScaleAtom,
-  viewerSettingsAtom,
-  cursorXAtom,
-  selectedSiteAtom,
-  selectedTrackPosAtom,
-} from "../../store";
+import { dataAtom, selectedSiteAtom } from "../../../store";
+import { useViewerSettings } from "../../../utils/useViewerSettings";
 
-function TrackDisplay() {
+function TrackDisplay({ renderer }) {
   const data = useAtomValue(dataAtom);
-  const [viewerScale, setViewerScale] = useAtom(viewerScaleAtom);
-  const viewerSettings = useAtomValue(viewerSettingsAtom);
-  const [cursorX, setCursorX] = useAtom(cursorXAtom);
+  const { viewport } = useViewerSettings();
   const [selectedSite, setSelectedSite] = useAtom(selectedSiteAtom);
-  const selectedTrackPos = useAtomValue(selectedTrackPosAtom);
 
   const xScrollRef = useRef(null);
   const yScrollRef = useRef(null);
   const viewportRef = useRef(null);
-  const savedCenterGenomicPos = useRef(null);
 
   useEffect(() => {
-    if (savedCenterGenomicPos.current === null) return;
-    if (!viewportRef.current || !data) return;
-
     const vp = viewportRef.current;
-    const newCenterPixel = genomicToPixel(savedCenterGenomicPos.current, data.metadata, viewerSettings.scale);
-    vp.scrollLeft = newCenterPixel - vp.clientWidth / 2;
-    savedCenterGenomicPos.current = null;
-  }, [viewerSettings]);
-
-  const zoom = (factor) => {
-    if (viewportRef.current && data) {
-      const vp = viewportRef.current;
-      const centerPixel = vp.scrollLeft + vp.clientWidth / 2;
-      savedCenterGenomicPos.current = pixelToGenomic(centerPixel, data.metadata, viewerScale);
-    }
-    setViewerScale((prev) => prev * factor);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-      if (e.key === "+" || e.key === "=") zoom(1.25);
-      else if (e.key === "-" || e.key === "_") zoom(1 / 1.25);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [data, viewerScale]);
+    vp.scrollLeft = viewport.px.start;
+  }, [viewport.px.start]);
 
   return (
     <>
@@ -69,7 +33,7 @@ function TrackDisplay() {
             ];
 
             return (
-              <div className="flex flex-col h-full justify-between">
+              <div className="flex flex-col h-full">
                 <div className="flex flex-row gap-2 min-h-0 flex-1">
                   <div className="relative pl-2">
                     <div className="absolute top-[32px] right-0 italic text-sm text-right">DRACH motifs</div>
@@ -97,11 +61,10 @@ function TrackDisplay() {
                       xScrollRef={xScrollRef}
                       sortedTxIds={sortedTxIds}
                       coveredTxIds={coveredTxIds}
+                      renderer={renderer}
                     />
                   </div>
                 </div>
-
-                <InfoPanel zoom={zoom} />
               </div>
             );
           })()}

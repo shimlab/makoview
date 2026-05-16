@@ -1,8 +1,13 @@
 import memoize from "memoize";
+import { getDefaultStore } from "jotai";
+import { _viewerScaleAtom } from "../store";
+
+const memoizeMultiArg = (fn) => memoize(fn, { cacheKey: (args) => args.join(",") });
 
 const INTRON_PIXEL_WIDTH = 20;
 
-const buildSegments = (metadata, scale) => {
+const buildSegments = memoize((scale) => {
+  const metadata = window.__DATA__.metadata;
   const ranges = metadata.ranges;
   const trackStart = metadata.start - 100;
   const trackEnd = metadata.end + 100;
@@ -46,10 +51,10 @@ const buildSegments = (metadata, scale) => {
   }
 
   return { segments, totalPixelWidth: pixelOffset };
-};
+});
 
-export const genomicToPixel = (genomicPos, metadata, scale) => {
-  const { segments } = buildSegments(metadata, scale);
+export const _genomicToPixel = memoizeMultiArg((genomicPos, scale) => {
+  const { segments } = buildSegments(scale);
 
   for (const seg of segments) {
     if (genomicPos >= seg.genomicStart && genomicPos <= seg.genomicEnd) {
@@ -60,10 +65,10 @@ export const genomicToPixel = (genomicPos, metadata, scale) => {
 
   const lastSeg = segments[segments.length - 1];
   return Math.round(lastSeg.pixelStart + lastSeg.pixelWidth);
-};
+});
 
-export const pixelToGenomic = (pixelPos, metadata, scale) => {
-  const { segments } = buildSegments(metadata, scale);
+export const _pixelToGenomic = memoizeMultiArg((pixelPos, scale) => {
+  const { segments } = buildSegments(scale);
 
   for (const seg of segments) {
     if (pixelPos >= seg.pixelStart && pixelPos <= seg.pixelStart + seg.pixelWidth) {
@@ -74,16 +79,24 @@ export const pixelToGenomic = (pixelPos, metadata, scale) => {
 
   const lastSeg = segments[segments.length - 1];
   return lastSeg.genomicEnd;
-};
+});
 
-export const getTrackBounds = (metadata, scale) => {
-  const tickInterval = Math.round((2000 * 100) / scale);
+export const _getTrackBounds = (scale) => {
+  const metadata = window.__DATA__.metadata;
   return {
     start: metadata.start - 100,
     end: metadata.end + 100,
   };
 };
 
-export const getTotalPixelWidth = (metadata, scale) => {
-  return buildSegments(metadata, scale).totalPixelWidth;
-};
+const getScale = () => getDefaultStore().get(_viewerScaleAtom);
+
+export const getTrackBounds = () => _getTrackBounds(getScale());
+
+export const genomicToPixel = (genomicPos) => _genomicToPixel(genomicPos, getScale());
+
+export const pixelToGenomic = (pixelPos) => _pixelToGenomic(pixelPos, getScale());
+
+export const _getTotalPixelWidth = (scale) => buildSegments(scale).totalPixelWidth;
+
+export const getTotalPixelWidth = () => _getTotalPixelWidth(getScale());
