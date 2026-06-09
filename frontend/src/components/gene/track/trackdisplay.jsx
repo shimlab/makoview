@@ -34,10 +34,32 @@ function TrackDisplay({ renderer }) {
 
             return (
               <div className="flex flex-col h-full">
-                <div className="flex flex-row gap-2 min-h-0 flex-1">
+                <style>{`
+                .trackViewController {
+                  position: relative;
+                }
+
+                .trackViewController::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 30px;
+                    height: 100%;
+                   background: linear-gradient(to right,
+                      rgba(255,255,255,1) 0%,
+                      rgba(255,255,255,0.9) 20%,
+                      rgba(255,255,255,0.6) 60%,
+                      rgba(255,255,255,0) 100%
+                    );
+                    pointer-events: none;
+                    z-index: 1;
+                  }
+                `}</style>
+                <div className="flex flex-row min-h-0 flex-1">
                   <Sidebar sortedTxIds={sortedTxIds} coveredTxIds={coveredTxIds} yScrollRef={yScrollRef} />
 
-                  <div className="flex flex-col flex-1 min-w-0">
+                  <div className="trackViewController flex flex-col flex-1 min-w-0">
                     <Axis ref={xScrollRef} />
                     <TrackView
                       ref={viewportRef}

@@ -23,7 +23,7 @@ function Sidebar({ sortedTxIds, coveredTxIds, yScrollRef }) {
             <div
               className={
                 `h-[80px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"} flex flex-col justify-center pl-2 pr-2 ` +
-                (selectedSite?.transcript_id === txId ? "bg-sky-100" : "")
+                (selectedSite?.transcript_id === txId ? "bg-[#acdce3]" : "")
               }
               key={txId}
             >

@@ -146,7 +146,7 @@ export const TrackRenderer = function TrackRenderer({
           strokeWidth={2}
           shapeRendering="optimiseSpeed"
           onMouseDown={() => setSelectedSite(siteInfo)}
-          className="cursor-crosshair"
+          className="cursor-pointer"
         />,
       );
     } else {
@@ -159,7 +159,7 @@ export const TrackRenderer = function TrackRenderer({
           height={14}
           fill="transparent"
           onMouseDown={() => setSelectedSite(site)}
-          className="cursor-crosshair"
+          className="cursor-pointer"
         />,
       );
     }
