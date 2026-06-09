@@ -1,7 +1,7 @@
 import React from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { genomicToPixel } from "../../utils/coordinates";
-import { dataAtom, displayOptionsAtom, selectedSiteAtom } from "../../store";
+import { genomicToPixel } from "../../../utils/coordinates";
+import { dataAtom, displayOptionsAtom, selectedSiteAtom } from "../../../store";
 
 const LINE_HEIGHT = 80;
 

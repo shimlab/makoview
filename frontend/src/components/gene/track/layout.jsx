@@ -2,12 +2,13 @@ import { useEffect } from "react";
 import { useRef } from "react";
 import { useAtomValue } from "jotai";
 import Axis from "./axis";
-import TrackView from "./track";
+import TrackView from "./trackview";
 import Sidebar from "./sidebar";
+import TrackRenderer from "./render";
 import { dataAtom } from "../../../store";
 import { useViewerSettings } from "../../../utils/useViewerSettings";
 
-function TrackDisplay({ renderer }) {
+function TrackDisplay() {
   const data = useAtomValue(dataAtom);
   const { viewport } = useViewerSettings();
 
@@ -67,7 +68,6 @@ function TrackDisplay({ renderer }) {
                       xScrollRef={xScrollRef}
                       sortedTxIds={sortedTxIds}
                       coveredTxIds={coveredTxIds}
-                      renderer={renderer}
                     />
                   </div>
                 </div>

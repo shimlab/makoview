@@ -1,11 +1,12 @@
 import React, { useRef, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { dataAtom, selectedTrackPosAtom } from "../../../store";
+import TrackRenderer from "./render";
 import { useViewerSettings } from "../../../utils/useViewerSettings";
 
 const LINE_HEIGHT = 80;
 
-function TrackView({ xScrollRef, yScrollRef, ref, sortedTxIds, coveredTxIds, renderer: Renderer }) {
+function TrackView({ xScrollRef, yScrollRef, ref, sortedTxIds, coveredTxIds }) {
   const data = useAtomValue(dataAtom);
   const { px, viewport, setViewportScroll, setCursorX } = useViewerSettings();
   const selectedTrackPos = useAtomValue(selectedTrackPosAtom);
@@ -111,7 +112,7 @@ function TrackView({ xScrollRef, yScrollRef, ref, sortedTxIds, coveredTxIds, ren
           <rect x={selectedTrackPos - 4} y={0} width={9} height={svgHeight} fill="#acdce3" pointerEvents="none" />
         )}
 
-        <Renderer
+        <TrackRenderer
           sortedTxIds={sortedTxIds}
           coveredTxIds={coveredTxIds}
           visibleGenomicStart={viewport.bp.start}
