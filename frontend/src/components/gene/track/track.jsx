@@ -3,7 +3,7 @@ import { useAtomValue } from "jotai";
 import { dataAtom, selectedTrackPosAtom } from "../../../store";
 import { useViewerSettings } from "../../../utils/useViewerSettings";
 
-const LINE_HEIGHT = 54;
+const LINE_HEIGHT = 80;
 
 function TrackView({ xScrollRef, yScrollRef, ref, sortedTxIds, coveredTxIds, renderer: Renderer }) {
   const data = useAtomValue(dataAtom);
@@ -86,24 +86,24 @@ function TrackView({ xScrollRef, yScrollRef, ref, sortedTxIds, coveredTxIds, ren
     >
       <svg height={svgHeight} width={px.end}>
         <defs>
-          <pattern id="track-fwd-strand" x="0" y="0" width="20" height="54" patternUnits="userSpaceOnUse">
-            <line x1="0" x2="20" y1="41" y2="41" stroke="#999" strokeWidth="2" />
-            <polyline points="3,36 9,41 3,46" fill="none" stroke="#999" strokeWidth="2" />
+          <pattern id="track-fwd-strand" x="0" y="0" width="20" height="80" patternUnits="userSpaceOnUse">
+            <line x1="0" x2="20" y1="54" y2="54" stroke="#999" strokeWidth="2" />
+            <polyline points="3,49 9,53 3,59" fill="none" stroke="#999" strokeWidth="2" />
           </pattern>
 
-          <pattern id="track-fwd-strand-nocover" x="0" y="0" width="20" height="54" patternUnits="userSpaceOnUse">
-            <line x1="0" x2="20" y1="41" y2="41" stroke="#ddd" strokeWidth="2" />
-            <polyline points="3,36 9,41 3,46" fill="none" stroke="#ddd" strokeWidth="2" />
+          <pattern id="track-fwd-strand-nocover" x="0" y="0" width="20" height="80" patternUnits="userSpaceOnUse">
+            <line x1="0" x2="20" y1="54" y2="54" stroke="#ddd" strokeWidth="2" />
+            <polyline points="3,49 9,53 3,59" fill="none" stroke="#ddd" strokeWidth="2" />
           </pattern>
 
-          <pattern id="track-rev-strand" x="0" y="0" width="20" height="54" patternUnits="userSpaceOnUse">
-            <line x1="0" x2="20" y1="41" y2="41" stroke="#999" strokeWidth="2" />
-            <polyline points="9,36 3,41 9,46" fill="none" stroke="#999" strokeWidth="2" />
+          <pattern id="track-rev-strand" x="0" y="0" width="20" height="80" patternUnits="userSpaceOnUse">
+            <line x1="0" x2="20" y1="54" y2="54" stroke="#999" strokeWidth="2" />
+            <polyline points="9,49 3,53 9,59" fill="none" stroke="#999" strokeWidth="2" />
           </pattern>
 
-          <pattern id="track-rev-strand-nocover" x="0" y="0" width="20" height="54" patternUnits="userSpaceOnUse">
-            <line x1="0" x2="20" y1="41" y2="41" stroke="#ddd" strokeWidth="2" />
-            <polyline points="9,36 3,41 9,46" fill="none" stroke="#ddd" strokeWidth="2" />
+          <pattern id="track-rev-strand-nocover" x="0" y="0" width="20" height="80" patternUnits="userSpaceOnUse">
+            <line x1="0" x2="20" y1="54" y2="54" stroke="#ddd" strokeWidth="2" />
+            <polyline points="9,49 3,53 9,59" fill="none" stroke="#ddd" strokeWidth="2" />
           </pattern>
         </defs>
 

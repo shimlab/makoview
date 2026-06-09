@@ -15,10 +15,12 @@ class GeneDatabase:
         fits_path: Path,
         genome_ref_path: Path,
         reads_path: Path,
+        coverage_path: Path,
     ):
         self.conn = duckdb.connect(":memory:")
         self.conn.execute(f"ATTACH '{sites_path}' AS sites_db (READ_ONLY)")
         self.conn.execute(f"ATTACH '{reads_path}' AS reads_db (READ_ONLY)")
+        self.conn.execute(f"ATTACH '{coverage_path}' AS coverage_db (READ_ONLY)")
         self.conn.execute(f"""
             CREATE TABLE fits AS
             SELECT * FROM read_csv('{fits_path}', delim='\t', header=true)
@@ -224,13 +226,76 @@ class GeneDatabase:
         columns = [desc[0] for desc in res.description]
         return [dict(zip(columns, row)) for row in res.fetchall()]
 
+    def get_coverage(self, transcript_ids: list[str]) -> dict[str, list[dict]]:
+        if not transcript_ids:
+            return {}
+        placeholders = ", ".join("?" * len(transcript_ids))
+        res = self.conn.execute(
+            f"""
+            SELECT transcript_id, "sample", "group", count
+            FROM coverage_db.coverage
+            WHERE transcript_id IN ({placeholders})
+            ORDER BY transcript_id, "sample", "group"
+            """,
+            transcript_ids,
+        )
+        result: dict[str, list] = {}
+        for tx_id, sample, group, count in res.fetchall():
+            result.setdefault(tx_id, []).append(
+                {"sample": sample, "group": group, "read_count": count}
+            )
+        return result
+
+    def get_mod_counts(self, transcript_ids: list[str]) -> dict[str, dict]:
+        # TODO: this function (and therefore total_site_count and called_site_count) is incorrect
+        #   and needs to be properly implemented.
+
+        if not transcript_ids:
+            return {}
+        placeholders = ", ".join("?" * len(transcript_ids))
+        res = self.conn.execute(
+            f"""
+            SELECT rname,
+                   COUNT(DISTINCT transcript_position) AS total_site_count,
+                   COUNT(DISTINCT CASE WHEN NOT ignored THEN transcript_position END) AS called_site_count
+            FROM reads_db.reads
+            WHERE rname IN ({placeholders})
+            GROUP BY rname
+            """,
+            transcript_ids,
+        )
+        return {row[0]: {"total": row[1], "called": row[2]} for row in res.fetchall()}
+
     def get_gene_data(self, gene_id) -> dict:
         metadata, transcripts = self._process_gene(gene_id)
 
         transcript_ids = list(transcripts.keys())
+
+        coverage = self.get_coverage(transcript_ids)
+        total_reads = sum(
+            e["read_count"] for entries in coverage.values() for e in entries
+        )
+        metadata["total_reads"] = total_reads
+
+        site_counts = self.get_mod_counts(transcript_ids)
+
+        transcripts_with_reads = {
+            tx_id: {
+                "total_site_count": site_counts.get(tx_id, {}).get("total", 0),
+                "called_site_count": site_counts.get(tx_id, {}).get("called", 0),
+                "reads": coverage.get(tx_id, []),
+                "ranges": regions,
+            }
+            for tx_id, regions in sorted(
+                transcripts.items(),
+                key=lambda item: sum(e["read_count"] for e in coverage.get(item[0], [])),
+                reverse=True,
+            )
+        }
+
         return {
             "metadata": metadata,
-            "transcripts": transcripts,
+            "transcripts": transcripts_with_reads,
             "sites": self.get_sites(transcript_ids),
             "candidate_sites": self.get_candidate_sites(gene_id, metadata),
         }

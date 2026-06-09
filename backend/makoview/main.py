@@ -19,6 +19,7 @@ async def lifespan(app: FastAPI):
         app.state.fits_path,
         app.state.genome_ref_path,
         app.state.reads_path,
+        app.state.coverage_path,
     )
     yield
 
@@ -29,6 +30,7 @@ def create_app(
     fits_path: Path,
     genome_ref_path: Path,
     reads_path: Path,
+    coverage_path: Path,
 ) -> FastAPI:
     app = FastAPI(title="Makoview v2", lifespan=lifespan)
     app.state.gtf_path = gtf_path
@@ -36,6 +38,7 @@ def create_app(
     app.state.fits_path = fits_path
     app.state.genome_ref_path = genome_ref_path
     app.state.reads_path = reads_path
+    app.state.coverage_path = coverage_path
 
     from .routes import genes, search, gene_frontend, site_frontend, plot, site
 
@@ -74,6 +77,7 @@ def cli():
         "--genome", required=True, help="Path to genome reference fasta"
     )
     parser.add_argument("--reads", required=True, help="Path to reads.duckdb")
+    parser.add_argument("--coverage", required=True, help="Path to coverage.duckdb")
 
     args = parser.parse_args()
 
@@ -83,6 +87,7 @@ def cli():
         Path(args.fits),
         Path(args.genome),
         Path(args.reads),
+        Path(args.coverage),
     )
     uvicorn.run(app, host=args.host, port=args.port)
 

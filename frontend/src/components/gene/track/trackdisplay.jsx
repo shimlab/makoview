@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import { useRef } from "react";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 import Axis from "./axis";
 import TrackView from "./track";
-import { dataAtom, selectedSiteAtom } from "../../../store";
+import Sidebar from "./sidebar";
+import { dataAtom } from "../../../store";
 import { useViewerSettings } from "../../../utils/useViewerSettings";
 
 function TrackDisplay({ renderer }) {
   const data = useAtomValue(dataAtom);
   const { viewport } = useViewerSettings();
-  const [selectedSite, setSelectedSite] = useAtom(selectedSiteAtom);
 
   const xScrollRef = useRef(null);
   const yScrollRef = useRef(null);
@@ -35,23 +35,7 @@ function TrackDisplay({ renderer }) {
             return (
               <div className="flex flex-col h-full">
                 <div className="flex flex-row gap-2 min-h-0 flex-1">
-                  <div className="relative pl-2">
-                    <div className="absolute top-[32px] right-0 italic text-sm text-right">DRACH motifs</div>
-                    <div className="absolute top-[60px] right-0 font-bold text-right">{data.metadata.chr}</div>
-                    <div ref={yScrollRef} className="pb-25 mt-[80px] overflow-y-hidden h-full">
-                      {sortedTxIds.map((txId) => (
-                        <div
-                          className={
-                            `h-[54px] text-base/[82px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"} ` +
-                            (selectedSite?.transcript_id === txId ? "text-blue-700 underline" : "")
-                          }
-                          key={txId}
-                        >
-                          {txId}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <Sidebar sortedTxIds={sortedTxIds} coveredTxIds={coveredTxIds} yScrollRef={yScrollRef} />
 
                   <div className="flex flex-col flex-1 min-w-0">
                     <Axis ref={xScrollRef} />

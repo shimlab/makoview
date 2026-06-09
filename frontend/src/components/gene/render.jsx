@@ -3,7 +3,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { genomicToPixel } from "../../utils/coordinates";
 import { dataAtom, displayOptionsAtom, selectedSiteAtom } from "../../store";
 
-const LINE_HEIGHT = 54;
+const LINE_HEIGHT = 80;
 
 const generateTriangleCoords = (x, y, height, direction) => {
   const base_half_length = 0.5773503 * height;
@@ -35,7 +35,7 @@ export const TrackRenderer = function TrackRenderer({
   const exonElements = [];
 
   for (const txId of sortedTxIds) {
-    const features = data.transcripts[txId];
+    const features = data.transcripts[txId].ranges;
     const rowIdx = txRowMap.get(txId);
     const covered = coveredTxIds.has(txId);
 
@@ -60,7 +60,7 @@ export const TrackRenderer = function TrackRenderer({
         }
       }
 
-      const y = isUtrSegment ? rowIdx * LINE_HEIGHT + 35 : rowIdx * LINE_HEIGHT + 30;
+      const y = isUtrSegment ? rowIdx * LINE_HEIGHT + 48 : rowIdx * LINE_HEIGHT + 43;
       const height = isUtrSegment ? 13 : 24;
 
       exonElements.push(
@@ -113,7 +113,7 @@ export const TrackRenderer = function TrackRenderer({
       <rect
         key={`sel-${site.transcript_id}-${site.chr_position}`}
         x={x - 1}
-        y={rowIdx * LINE_HEIGHT + 15}
+        y={rowIdx * LINE_HEIGHT + 28}
         width={2}
         height={39}
         fill="#999"
@@ -123,7 +123,7 @@ export const TrackRenderer = function TrackRenderer({
     if (isTested) {
       const isUpRegulated = site.test.estimate > 0;
       const color = isUpRegulated ? "#189649" : "#ef4444";
-      const marker_y = rowIdx * LINE_HEIGHT + 24;
+      const marker_y = rowIdx * LINE_HEIGHT + 37;
       const points = isUpRegulated
         ? generateTriangleCoords(x, marker_y, 12, "up")
         : generateTriangleCoords(x, marker_y, 12, "down");
@@ -154,7 +154,7 @@ export const TrackRenderer = function TrackRenderer({
         <rect
           key={`sel-click-${site.transcript_id}-${site.chr_position}`}
           x={x - 4}
-          y={rowIdx * LINE_HEIGHT + 13}
+          y={rowIdx * LINE_HEIGHT + 39}
           width={8}
           height={14}
           fill="transparent"
