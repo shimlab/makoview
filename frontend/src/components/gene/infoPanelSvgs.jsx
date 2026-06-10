@@ -6,7 +6,7 @@ export function AnimatedWave({ selectedSite }) {
       height="320"
       viewBox="0 0 680 320"
       preserveAspectRatio="none"
-      className="absolute bottom-0 left-0 pointer-events-none transition-[transform] duration-150 ease-in-out"
+      className="absolute bottom-0 left-0 pointer-events-none transition-[transform] duration-150 ease-in-out z-1000"
       style={{ transform: selectedSite ? "translateY(0px)" : "translateY(140px)" }}
     >
       <path
@@ -29,7 +29,7 @@ export function StaticWave() {
       height="170"
       viewBox="0 0 680 170"
       preserveAspectRatio="none"
-      className="absolute bottom-0 left-0 pointer-events-none"
+      className="absolute bottom-0 left-0 pointer-events-none z-1001"
     >
       <path
         d="M 0 117 C 100 97 160 138 280 110 C 370 92 450 120 530 102 C 590 88 640 105 680 110 L 680 170 L 0 170 Z"

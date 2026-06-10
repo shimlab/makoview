@@ -78,7 +78,7 @@ function InfoPanel() {
         <AnimatedWave selectedSite={selectedSite} />
 
         <div
-          className={`absolute left-0 w-full px-6 ${selectedSite ? "" : "hidden"}`}
+          className={`absolute left-0 w-full px-6 ${selectedSite ? "" : "hidden"} z-1002`}
           style={{ bottom: "75px", minHeight: "125px", maxHeight: "125px" }}
         >
           {selectedSite && (
@@ -123,7 +123,7 @@ function InfoPanel() {
 
         <StaticWave />
 
-        <div className="absolute bottom-0 left-0 text-slate-900 p-2 w-full flex flex-row text-md items-center gap-3">
+        <div className="absolute bottom-0 left-0 text-slate-900 p-2 w-full flex flex-row text-md items-center gap-3 z-1002">
           <div className="font-bold">Gene: {data.metadata.gene_name}</div>
           <div className="text-sm">
             {data.metadata.gene_id}
