@@ -38,11 +38,14 @@ function Sidebar({ sortedTxIds, coveredTxIds, yScrollRef }) {
           const tx_counts = data.transcripts[txId].reads.reduce((sum, o) => sum + o.read_count, 0);
           const totalReads = data.metadata.total_reads;
           const pct = totalReads > 0 ? ((tx_counts / totalReads) * 100).toFixed(1) : "0.0";
-          const sortedReads = [...data.transcripts[txId].reads].sort((a, b) => b.read_count - a.read_count);
-          const isEnsembl = txId.startsWith("ENST");
+          const sortedReads = [...data.transcripts[txId].reads].sort(
+            (a, b) => a.group.localeCompare(b.group) || a.sample.localeCompare(b.sample),
+          );
+
+          const txIdWithoutVersion = txId.replace(/\.\d+$/, "");
 
           const popupTop = sidebarRect.top + 80 + index * 80 - scrollTop;
-          const popupLeft = sidebarRect.right + 4;
+          const popupLeft = sidebarRect.right - 2;
 
           return (
             <div
@@ -50,36 +53,46 @@ function Sidebar({ sortedTxIds, coveredTxIds, yScrollRef }) {
               key={txId}
             >
               <div className={"rounded-sm p-2 ml-2 " + (selectedSite?.transcript_id === txId ? "bg-[#acdce3]" : "")}>
-                <div className="text-xs">
+                <div className="text-xs tabular-nums">
                   {tx_counts} reads ({pct}%)
                 </div>
-                <div>{txId}</div>
+                <div className="tabular-nums">{txId}</div>
               </div>
 
               <div
-                className="opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150 fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-48 text-sm text-gray-800"
+                className="opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto fixed z-[9999] bg-white border border-gray-600 rounded-lg shadow-lg p-4 text-sm text-black"
                 style={{ top: popupTop, left: popupLeft }}
               >
-                {isEnsembl && (
-                  <a
-                    href={`https://www.ensembl.org/Multi/Search/Results?q=${txId};site=ensembl;page=1;facet_feature_type=Transcript`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block mb-2 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
-                  >
-                    Open in Ensembl ↗
-                  </a>
-                )}
-                <ul className="space-y-1">
-                  {sortedReads.map((r) => (
-                    <li key={r.sample} className="flex justify-between gap-3">
-                      <span className="text-gray-500">
-                        {r.sample} ({r.group})
-                      </span>
-                      <span className="font-medium tabular-nums">{r.read_count}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="absolute -left-[6px] top-[35px] w-[10px] h-[10px] bg-white border-l border-b border-gray-600 rotate-45" />
+
+                <div className="tabular-nums text-md mb-4">{txId}</div>
+
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-gray-200 pb-1 text-xs uppercase text-gray-600">
+                      <th className="font-medium">sample</th>
+                      <th className="font-medium">group</th>
+                      <th className="text-right font-medium">count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedReads.map((r) => (
+                      <tr key={r.sample} className="pb-1 border-spacing-4">
+                        <td className="pr-4">{r.sample}</td>
+                        <td className="pr-4">{r.group}</td>
+                        <td className="tabular-nums text-right">{r.read_count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <a
+                  href={`https://www.ensembl.org/Multi/Search/Results?q=${txIdWithoutVersion};site=ensembl;page=1;facet_feature_type=Transcript`}
+                  target="_blank"
+                  className="block mt-4 px-2 py-1 text-xs bg-[#3366cc] text-white rounded hover:bg-[#254a99] text-center"
+                >
+                  Search Ensembl ↗
+                </a>
               </div>
             </div>
           );
