@@ -154,9 +154,9 @@ export const TrackRenderer = function TrackRenderer({
         <rect
           key={`sel-click-${site.transcript_id}-${site.chr_position}`}
           x={x - 4}
-          y={rowIdx * LINE_HEIGHT + 39}
+          y={rowIdx * LINE_HEIGHT + 26}
           width={8}
-          height={14}
+          height={26}
           fill="transparent"
           onMouseDown={() => setSelectedSite(site)}
           className="cursor-pointer"
