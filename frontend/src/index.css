@@ -5,3 +5,17 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
+@utility hover-lift {
+  transition-property: transform;
+  transition-duration: 150ms;
+  &:hover {
+    --tw-translate-y: -0.125rem;
+    transform: translateY(var(--tw-translate-y));
+  }
+  &:active {
+    /* transition-delay: 75ms; */
+    --tw-translate-y: 0.125rem;
+    transform: translateY(var(--tw-translate-y));
+  }
+}
+

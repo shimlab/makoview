@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useAtomValue, useAtom } from "jotai";
 import { AnimatedWave, StaticWave, CloseArrow } from "./infoPanelSvgs";
 import { pixelToGenomic, genomicToPixel } from "../../utils/coordinates";
-import { dataAtom, selectedSiteAtom, isDemoAtom } from "../../store";
+import { dataAtom, selectedSiteAtom, isDemoAtom, showTutorialAtom } from "../../store";
 import { useViewerSettings } from "../../utils/useViewerSettings";
 
 const formatNumericalValue = (n) => {
@@ -135,13 +135,13 @@ function InfoPanel() {
           <div className="flex-1"></div>
           <div className="text-lg">{Math.round(scale)}%</div>
           <button
-            className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
+            className="text-xl min-w-8 min-h-8 bg-white rounded-full border-2 border-teal-700 cursor-pointer hover-lift"
             onClick={() => zoom(1.25)}
           >
             +
           </button>
           <button
-            className="text-xl min-w-8 min-h-8 bg-white rounded-md border-2 border-gray-500 cursor-pointer"
+            className="text-xl min-w-8 min-h-8 bg-white rounded-full border-2 border-teal-700 cursor-pointer hover-lift"
             onClick={() => zoom(1 / 1.25)}
           >
             –

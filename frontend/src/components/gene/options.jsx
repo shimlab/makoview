@@ -35,7 +35,7 @@ function OptionsBar() {
         <button
           key={key}
           onClick={() => toggle(key)}
-          className={`text-sm px-3 py-0.5 rounded-full border-2 cursor-pointer whitespace-nowrap transition-colors duration-100 ${
+          className={`text-sm px-3 py-0.5 rounded-full border-2 cursor-pointer whitespace-nowrap hover-lift ${
             options[key]
               ? "border-blue-800 bg-blue-100 text-blue-900 font-semibold"
               : "border-gray-300 bg-white text-gray-500"

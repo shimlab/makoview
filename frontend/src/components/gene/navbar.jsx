@@ -118,16 +118,12 @@ export default function Navbar() {
           </div>
         )}
         <div className="grow" />
-        <div className="hover:underline">
-          <a href="https://shimlab.github.io/mako" target="_blank">
-            Docs ↗
-          </a>
-        </div>
-        <div className="hover:underline">
-          <a href="https://github.com/shimlab/mako" target="_blank">
-            GitHub ↗
-          </a>
-        </div>
+        <a href="https://shimlab.github.io/mako" target="_blank" className="hover:underline hover-lift">
+          Docs ↗
+        </a>
+        <a href="https://github.com/shimlab/mako" target="_blank" className="hover:underline hover-lift">
+          GitHub ↗
+        </a>
       </div>
     </section>
   );
