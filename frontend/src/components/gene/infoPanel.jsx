@@ -48,6 +48,7 @@ function InfoPanel() {
   const { scale, viewport, setScale, setViewportScroll } = useViewerSettings();
   const [selectedSite, setSelectedSite] = useAtom(selectedSiteAtom);
   const isDemo = useAtomValue(isDemoAtom);
+  const [showTutorial, setShowTutorial] = useAtom(showTutorialAtom);
 
   const scrollLeft = viewport.px.start;
   const clientWidth = viewport.px.end - viewport.px.start;
@@ -133,7 +134,13 @@ function InfoPanel() {
             {data.metadata.end.toLocaleString()}
           </div>
           <div className="flex-1"></div>
-          <div className="text-lg">{Math.round(scale)}%</div>
+          <button
+            className="text-sm px-3 min-h-8 mr-4 bg-white rounded-full border-2 border-teal-50 cursor-pointer hover-lift"
+            onClick={() => setShowTutorial((v) => !v)}
+          >
+            {showTutorial ? "Dismiss tutorial" : "Show tutorial"}
+          </button>
+          <div className="text-lg tabular-nums">{Math.round(scale)}%</div>
           <button
             className="text-xl min-w-8 min-h-8 bg-white rounded-full border-2 border-teal-700 cursor-pointer hover-lift"
             onClick={() => zoom(1.25)}
