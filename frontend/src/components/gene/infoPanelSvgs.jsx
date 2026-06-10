@@ -42,13 +42,7 @@ export function StaticWave() {
 
 export function CloseArrow({ onClose }) {
   return (
-    <svg
-      width="40"
-      height="125"
-      viewBox="0 0 40 125"
-      onClick={onClose}
-      className="cursor-pointer mr-8"
-    >
+    <svg width="40" height="125" viewBox="0 0 40 125" onClick={onClose} className="cursor-pointer mr-8">
       <defs>
         <marker id="arrowhead" viewBox="0 0 10 10" refX="5" refY="10" markerWidth="8" markerHeight="8">
           <path

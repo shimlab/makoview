@@ -5,6 +5,14 @@ import { pixelToGenomic, genomicToPixel } from "../../utils/coordinates";
 import { dataAtom, selectedSiteAtom, isDemoAtom } from "../../store";
 import { useViewerSettings } from "../../utils/useViewerSettings";
 
+const formatNumericalValue = (n) => {
+  // preferred over .toExponential so that e+0 is not shown,
+  // and positive exponent does not have a + sign
+  const exp = Math.floor(Math.log10(Math.abs(n)));
+  const mantissa = (n / 10 ** exp).toFixed(2);
+  return exp === 0 ? mantissa : `${mantissa}e${exp}`;
+};
+
 const formatPValue = (v) => {
   if (v === null || v === undefined) return null;
 
@@ -14,7 +22,7 @@ const formatPValue = (v) => {
   if (v < 0.01) stars = "**";
   if (v < 0.001) stars = "***";
 
-  return v.toPrecision(3) + stars;
+  return formatNumericalValue(v) + stars;
 };
 
 const SITE_FIELDS = {
@@ -25,14 +33,14 @@ const SITE_FIELDS = {
   model_type: { label: "Model" },
   p_value: { label: "p-value", format: formatPValue },
   bh_corrected_p_value: { label: "BH corrected p-value", format: formatPValue },
-  test_statistic: { label: "Test statistic", format: (v) => v?.toFixed(6) },
-  estimate: { label: "Estimate", format: (v) => v?.toFixed(6) },
-  std_err: { label: "Standard error", format: (v) => v?.toFixed(6) },
+  test_statistic: { label: "Test statistic", format: formatNumericalValue },
+  estimate: { label: "Estimate", format: formatNumericalValue },
+  std_err: { label: "Standard error", format: formatNumericalValue },
   sample_count: { label: "Samples covered" },
   total_read_count: { label: "Reads covered" },
-  max_prob: { label: "Max site p'bty", format: (v) => v?.toFixed(6) },
-  min_prob: { label: "Min site p'bty", format: (v) => v?.toFixed(6) },
-  avg_probability_modified: { label: "Avg site p'bty", format: (v) => v?.toFixed(6) },
+  max_prob: { label: "Max site p'bty", format: formatNumericalValue },
+  min_prob: { label: "Min site p'bty", format: formatNumericalValue },
+  avg_probability_modified: { label: "Avg site p'bty", format: formatNumericalValue },
 };
 
 function InfoPanel() {

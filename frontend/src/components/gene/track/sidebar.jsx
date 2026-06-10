@@ -30,7 +30,7 @@ function Sidebar({ sortedTxIds, coveredTxIds, yScrollRef }) {
   }, [yScrollRef]);
 
   return (
-    <div className="relative" ref={sidebarRef}>
+    <div className="relative overflow-y-hidden" ref={sidebarRef}>
       <div className="absolute top-[32px] right-0 italic text-sm text-right">DRACH motifs</div>
       <div className="absolute top-[60px] right-0 font-bold text-right">{data.metadata.chr}</div>
       <div ref={yScrollRef} className="pb-25 mt-[80px] overflow-y-hidden h-full">
