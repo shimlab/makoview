@@ -1,7 +1,8 @@
 import { useAtom, useAtomValue } from "jotai";
 import { isDemoAtom, showTutorialAtom } from "../../store";
-import tutorialLegend from "../../assets/tutorial_legend.svg";
-import tutorialAxis from "../../assets/tutorial_axis.svg";
+
+import TutorialLegendOverlay from "../../assets/tutorial_legend.svg?react";
+import TutorialAxisOverlay from "../../assets/tutorial_axis.svg?react";
 
 function TutorialOverlay() {
   const [showTutorial, setShowTutorial] = useAtom(showTutorialAtom);
@@ -31,8 +32,10 @@ function TutorialOverlay() {
           Dismiss tutorial
         </button>
       </div>
-      <img src={tutorialLegend} width="529" className="absolute bottom-[-65px] right-[25px] z-1100" />
-      <img src={tutorialAxis} width="611" className="absolute top-[-45px] left-[15px] z-1100" />
+
+      <TutorialLegendOverlay className="absolute bottom-[-65px] right-[25px] z-1100" />
+      <TutorialAxisOverlay className="absolute top-[-45px] left-[15px] z-1100" />
+
       <div className="bg-[rgba(0,0,0,0.5)] z-999 absolute top-0 left-0 bottom-[-40px] right-[-20px] ml-2 mt-2 rounded-lg" />
     </div>
   );

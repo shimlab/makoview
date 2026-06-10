@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import svgr from "vite-plugin-svgr";
 
 // plugin to replace __VITE_DATA__ with sample data
 function sampleDataInjectionPlugin() {
@@ -46,5 +47,5 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), tailwindcss(), sampleDataInjectionPlugin()],
+  plugins: [react(), tailwindcss(), sampleDataInjectionPlugin(), svgr()],
 });
