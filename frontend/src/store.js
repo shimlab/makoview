@@ -41,6 +41,8 @@ export const viewerStateAtom = atom((get) => {
   };
 });
 
+export const showTutorialAtom = atomWithStorage("makoview-show-tutorial", true);
+
 export const displayOptionsAtom = atomWithStorage("makoview-display-options", {
   untestedSites: false,
   nonSignificantSites: false,

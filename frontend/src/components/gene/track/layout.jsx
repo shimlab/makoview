@@ -5,15 +5,12 @@ import Axis from "./axis";
 import TrackView from "./trackview";
 import Sidebar from "./sidebar";
 import TrackRenderer from "./render";
-import { dataAtom, isDemoAtom } from "../../../store";
+import TutorialOverlay from "../tutorial";
+import { dataAtom } from "../../../store";
 import { useViewerSettings } from "../../../utils/useViewerSettings";
-
-import tutorialLegend from "../../../assets/tutorial_legend.svg";
-import tutorialAxis from "../../../assets/tutorial_axis.svg";
 
 function TrackDisplay() {
   const data = useAtomValue(dataAtom);
-  const isDemo = useAtomValue(isDemoAtom);
   const { viewport } = useViewerSettings();
 
   const xScrollRef = useRef(null);
@@ -65,30 +62,7 @@ function TrackDisplay() {
                   <Sidebar sortedTxIds={sortedTxIds} coveredTxIds={coveredTxIds} yScrollRef={yScrollRef} />
 
                   <div className="trackViewController flex flex-col flex-1 min-w-0">
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-1100 bg-white px-5 pt-4 pb-3 rounded-md w-[500px] pointer-events-auto border-2 border-black">
-                        <h1 className="text-lg font-semibold">Welcome to Makoview!</h1>
-                        <p className="mt-2">
-                          Makoview is an interactive tool for visualising the RNA modifications called by the{" "}
-                          <code>mako</code> pipeline.{" "}
-                          <a href="https://shimlab.github.io/mako" target="_blank" className="text-blue-600 underline">
-                            Docs ↗
-                          </a>
-                        </p>
-                        {isDemo && (
-                          <p className="mt-2">
-                            You're currently running in <span className="text-red-600">demo mode</span>, using sample
-                            data, so search is not available.
-                          </p>
-                        )}
-                        <button className="mt-2 px-4 py-1 border-2 border-blue-900 bg-white text-blue-900 rounded-full cursor-pointer hover:bg-blue-900 hover:text-white duration-100">
-                          Dismiss tutorial
-                        </button>
-                      </div>
-                      <img src={tutorialLegend} width="529" className="absolute bottom-[-65px] right-[25px] z-1100" />
-                      <img src={tutorialAxis} width="611" className="absolute top-[-45px] left-[15px] z-1100" />
-                      <div className="bg-[rgba(0,0,0,0.5)] z-999 absolute top-0 left-0 bottom-[-40px] right-[-20px] ml-2 mt-2 rounded-lg" />
-                    </div>
+                    <TutorialOverlay />
                     <Axis ref={xScrollRef} />
                     <TrackView
                       ref={viewportRef}
