@@ -67,7 +67,7 @@ function TrackDisplay() {
                   <div className="trackViewController flex flex-col flex-1 min-w-0">
                     <div className="absolute inset-0 pointer-events-none">
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-1100 bg-white px-5 pt-4 pb-3 rounded-md w-[500px] pointer-events-auto border-2 border-black">
-                        <h1 className="text-xl font-semibold">Welcome to Makoview!</h1>
+                        <h1 className="text-lg font-semibold">Welcome to Makoview!</h1>
                         <p className="mt-2">
                           Makoview is an interactive tool for visualising the RNA modifications called by the{" "}
                           <code>mako</code> pipeline.{" "}
