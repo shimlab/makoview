@@ -47,11 +47,10 @@ docs:   https://shimlab.github.io/mako
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.gtf_db = GeneDatabase(
-        app.state.gtf_path,
+    app.state.gtf_db = GeneDatabase(app.state.gtf_path, app.state.genome_ref_path)
+    app.state.gtf_db.init_conn(
         app.state.sites_path,
         app.state.fits_path,
-        app.state.genome_ref_path,
         app.state.reads_path,
         app.state.coverage_path,
     )
@@ -119,38 +118,38 @@ class _UvicornLogFilter(logging.Filter):
 
 def cli():
     parser = argparse.ArgumentParser(description="Makoview v2 genome browser")
-    parser.add_argument("--gtf", required=True, help="Path to GTF file")
-    parser.add_argument("--sites", required=True, help="Path to sites.duckdb")
-    parser.add_argument(
-        "--fits", required=True, help="Path to adaptive_binomial_fits.tsv"
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    init_parser = subparsers.add_parser(
+        "init", help="Index GTF and genome reference, then exit"
     )
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8001)
-    parser.add_argument(
+    init_parser.add_argument("--gtf", required=True, help="Path to GTF file")
+    init_parser.add_argument(
         "--genome", required=True, help="Path to genome reference fasta"
     )
-    parser.add_argument("--reads", required=True, help="Path to reads.duckdb")
-    parser.add_argument("--coverage", required=True, help="Path to coverage.duckdb")
-    parser.add_argument(
-        "--indexing-only",
-        action="store_true",
-        help="Build the GTF index and exit without starting the server",
+
+    serve_parser = subparsers.add_parser("serve", help="Start the Makoview server")
+    serve_parser.add_argument("--gtf", required=True, help="Path to GTF file")
+    serve_parser.add_argument("--sites", required=True, help="Path to sites.duckdb")
+    serve_parser.add_argument(
+        "--fits", required=True, help="Path to adaptive_binomial_fits.tsv"
+    )
+    serve_parser.add_argument("--host", default="127.0.0.1")
+    serve_parser.add_argument("--port", type=int, default=8001)
+    serve_parser.add_argument(
+        "--genome", required=True, help="Path to genome reference fasta"
+    )
+    serve_parser.add_argument("--reads", required=True, help="Path to reads.duckdb")
+    serve_parser.add_argument(
+        "--coverage", required=True, help="Path to coverage.duckdb"
     )
 
     args = parser.parse_args()
 
-    if args.indexing_only:
+    if args.command == "init":
         logging.basicConfig(level=logging.INFO)
-        logger.info(f"Indexing GTF: {args.gtf}")
-        GeneDatabase(
-            Path(args.gtf),
-            Path(args.sites),
-            Path(args.fits),
-            Path(args.genome),
-            Path(args.reads),
-            Path(args.coverage),
-        )
-        logger.info("Indexing complete.")
+        GeneDatabase(Path(args.gtf), Path(args.genome))
+        logger.info("Initialisation complete.")
         return
 
     app = create_app(

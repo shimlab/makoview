@@ -14,27 +14,43 @@ class GeneDatabase:
     def __init__(
         self,
         gtf_path: Path,
+        genome_ref_path: Path,
+    ):
+        logger.info("↪ Initialise GTF:              %s", gtf_path)
+        self._gtf_path = gtf_path
+        self._gtf_db_path = gtf_path.with_suffix(".db")
+        self.conn = None
+
+        self.create_gene_annotation_db(gtf_path, self._gtf_db_path)
+
+        logger.info("↪ Initialise reference: %s", genome_ref_path)
+        self.genes = Fasta(genome_ref_path)
+
+    def init_conn(
+        self,
         sites_path: Path,
         fits_path: Path,
-        genome_ref_path: Path,
         reads_path: Path,
         coverage_path: Path,
     ):
-        logger.info("↪ Indexing GTF:                %s", gtf_path)
-
         self.conn = duckdb.connect(":memory:")
+        try:
+            self.conn.execute(f"ATTACH '{self._gtf_db_path}' AS gtf (READ_ONLY)")
+        except:  # noqa: E722
+            os.remove(self._gtf_db_path)
+            self.create_gene_annotation_db(self._gtf_path, self._gtf_db_path)
+            self.conn.execute(f"ATTACH '{self._gtf_db_path}' AS gtf (READ_ONLY)")
+        logger.info("↪ Attach sites:                %s", sites_path)
         self.conn.execute(f"ATTACH '{sites_path}' AS sites_db (READ_ONLY)")
+        logger.info("↪ Attach reads:                %s", reads_path)
         self.conn.execute(f"ATTACH '{reads_path}' AS reads_db (READ_ONLY)")
+        logger.info("↪ Attach coverage:             %s", coverage_path)
         self.conn.execute(f"ATTACH '{coverage_path}' AS coverage_db (READ_ONLY)")
+        logger.info("↪ Attach fits:                 %s", fits_path)
         self.conn.execute(f"""
             CREATE TABLE fits AS
             SELECT * FROM read_csv('{fits_path}', delim='\t', header=true)
         """)
-
-        self.create_gene_annotation_db(gtf_path, gtf_path.with_suffix(".db"))
-
-        logger.info("↪ Indexing genome reference:   %s", genome_ref_path)
-        self.genes = Fasta(genome_ref_path)
 
     def create_gene_annotation_db(self, gtf_path: Path, db_path: Path):
         """
@@ -59,13 +75,8 @@ class GeneDatabase:
                 transcript_id VARCHAR
             );
         """
-        # if db already exists, try to attach
         if os.path.exists(db_path):
-            try:
-                self.conn.execute(f"ATTACH '{db_path}' AS gtf (READ_ONLY)")
-                return
-            except:  # noqa: E722
-                pass
+            return
 
         logger.info("↪ Creating gene annotation database...")
         db_conn = duckdb.connect(db_path)
@@ -110,7 +121,6 @@ class GeneDatabase:
             raise e
 
         db_conn.close()
-        self.conn.execute(f"ATTACH '{db_path}' AS gtf (READ_ONLY)")
         print("Successfully created gene annotation database.")
 
     def _process_gene(self, gene_id) -> tuple[dict, dict[str, list[Exon]]]:
