@@ -1,10 +1,13 @@
 import duckdb
+import logging
 import os
 from pathlib import Path
 from typing import Optional
 from .split_transcript import Exon, split_tx_into_regions, get_ranges
 from .motifs import DRACH
 from pyfaidx import Fasta
+
+logger = logging.getLogger(__name__)
 
 
 class GeneDatabase:
@@ -17,6 +20,8 @@ class GeneDatabase:
         reads_path: Path,
         coverage_path: Path,
     ):
+        logger.info("↪ Indexing GTF:                %s", gtf_path)
+
         self.conn = duckdb.connect(":memory:")
         self.conn.execute(f"ATTACH '{sites_path}' AS sites_db (READ_ONLY)")
         self.conn.execute(f"ATTACH '{reads_path}' AS reads_db (READ_ONLY)")
@@ -28,7 +33,7 @@ class GeneDatabase:
 
         self.create_gene_annotation_db(gtf_path, gtf_path.with_suffix(".db"))
 
-        print("Indexing genome reference...")
+        logger.info("↪ Indexing genome reference:   %s", genome_ref_path)
         self.genes = Fasta(genome_ref_path)
 
     def create_gene_annotation_db(self, gtf_path: Path, db_path: Path):
@@ -62,7 +67,7 @@ class GeneDatabase:
             except:  # noqa: E722
                 pass
 
-        print("Creating gene annotation database...")
+        logger.info("↪ Creating gene annotation database...")
         db_conn = duckdb.connect(db_path)
 
         try:

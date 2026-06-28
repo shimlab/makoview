@@ -1,8 +1,11 @@
 import argparse
+import copy
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
+from uvicorn.config import LOGGING_CONFIG
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,9 +13,40 @@ from fastapi.middleware.cors import CORSMiddleware
 from .utils.gff import GeneDatabase
 
 
+logger = logging.getLogger(__name__)
+
+
+STARTUP_MESSAGE = """
+.___  ___.      ___       __  ___   ______   
+|   \\/   |     /   \\     |  |/  /  /  __  \\  
+|  \\  /  |    /  ^  \\    |  '  /  |  |  |  | 
+|  |\\/|  |   /  /_\\  \\   |    <   |  |  |  | 
+|  |  |  |  /  _____  \\  |  .  \\  |  `--'  | 
+|__|  |__| /__/     \\__\\ |__|\\__\\  \\______/  
+                     _   _  _ ___  _   _ 
+                    | \\ / || | __|| | | |
+                    `\\ V /'| | _| | 'V' |
+                      \\_/  |_|___|!_/ \\_!
+                                            
+makoview: visualisation of differential RNA
+          modifications
+
+Shim Lab @ University of Melbourne
+
+docs:   https://shimlab.github.io/mako
+
+============================================================
+  Makoview is running on http://{}:{}
+  
+  Tip: advice on accessing Makoview from other devices
+       using SSH port forwarding can be found in the docs:
+       https://shimlab.github.io/mako/makoview
+============================================================
+"""
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print(f"Indexing GTF: {app.state.gtf_path}")
     app.state.gtf_db = GeneDatabase(
         app.state.gtf_path,
         app.state.sites_path,
@@ -64,6 +98,25 @@ def create_app(
     return app
 
 
+class _UvicornLogFilter(logging.Filter):
+    def __init__(self, host: str, port: int):
+        super().__init__()
+        self.host = host
+        self.port = port
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if (
+            record.args
+            and len(record.args) > 2
+            and str(record.args[2]).startswith("/assets")
+        ):
+            return False
+        if record.msg.startswith("Uvicorn running on"):
+            print(STARTUP_MESSAGE.format(self.host, self.port))
+            return False
+        return True
+
+
 def cli():
     parser = argparse.ArgumentParser(description="Makoview v2 genome browser")
     parser.add_argument("--gtf", required=True, help="Path to GTF file")
@@ -78,8 +131,27 @@ def cli():
     )
     parser.add_argument("--reads", required=True, help="Path to reads.duckdb")
     parser.add_argument("--coverage", required=True, help="Path to coverage.duckdb")
+    parser.add_argument(
+        "--indexing-only",
+        action="store_true",
+        help="Build the GTF index and exit without starting the server",
+    )
 
     args = parser.parse_args()
+
+    if args.indexing_only:
+        logging.basicConfig(level=logging.INFO)
+        logger.info(f"Indexing GTF: {args.gtf}")
+        GeneDatabase(
+            Path(args.gtf),
+            Path(args.sites),
+            Path(args.fits),
+            Path(args.genome),
+            Path(args.reads),
+            Path(args.coverage),
+        )
+        logger.info("Indexing complete.")
+        return
 
     app = create_app(
         Path(args.gtf),
@@ -89,7 +161,20 @@ def cli():
         Path(args.reads),
         Path(args.coverage),
     )
-    uvicorn.run(app, host=args.host, port=args.port)
+    app.state.host = args.host
+    app.state.port = args.port
+
+    log_config = copy.deepcopy(LOGGING_CONFIG)
+    log_config["loggers"]["makoview"] = {
+        "handlers": ["default"],
+        "level": "INFO",
+        "propagate": False,
+    }
+
+    _filter = _UvicornLogFilter(args.host, args.port)
+    logging.getLogger("uvicorn.access").addFilter(_filter)
+    logging.getLogger("uvicorn.error").addFilter(_filter)
+    uvicorn.run(app, host=args.host, port=args.port, log_config=log_config)
 
 
 if __name__ == "__main__":
