@@ -1,7 +1,7 @@
-from dotenv.cli import get
 import duckdb
 import os
 from pathlib import Path
+from typing import Optional
 from .split_transcript import Exon, split_tx_into_regions, get_ranges
 from .motifs import DRACH
 from pyfaidx import Fasta
@@ -288,7 +288,9 @@ class GeneDatabase:
             }
             for tx_id, regions in sorted(
                 transcripts.items(),
-                key=lambda item: sum(e["read_count"] for e in coverage.get(item[0], [])),
+                key=lambda item: sum(
+                    e["read_count"] for e in coverage.get(item[0], [])
+                ),
                 reverse=True,
             )
         }
@@ -300,7 +302,7 @@ class GeneDatabase:
             "candidate_sites": self.get_candidate_sites(gene_id, metadata),
         }
 
-    def get_candidate_sites(self, gene_id, metadata) -> list[int]:
+    def get_candidate_sites(self, gene_id, metadata) -> list[tuple[int, str]]:
         chr = metadata["chr"]
         chr_start = metadata["start"]
         chr_end = metadata["end"]
@@ -319,7 +321,7 @@ class GeneDatabase:
                 for i in range(i_start, i_end - 3):
                     candidate_seq = sequence[i : i + 5]
                     if candidate_seq in motif_set:
-                        positions.append([chr_start - i - 2, candidate_seq])
+                        positions.append((chr_start - i - 2, candidate_seq))
         else:
             for r_start, r_end in metadata["ranges"]:
                 i_start = r_start - chr_start
@@ -327,11 +329,11 @@ class GeneDatabase:
                 for i in range(i_start, i_end - 3):
                     candidate_seq = sequence[i : i + 5]
                     if candidate_seq in motif_set:
-                        positions.append([chr_start + i + 2, candidate_seq])
+                        positions.append((chr_start + i + 2, candidate_seq))
 
         return positions
 
-    def get_site_info(self, transcript_id: str, position: int) -> dict | None:
+    def get_site_info(self, transcript_id: str, position: int) -> Optional[dict]:
         """Return all information for a single modification site, or None if not found.
 
         Returns a dict with three keys:

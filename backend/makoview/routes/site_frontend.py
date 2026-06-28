@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Optional
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, FileResponse
@@ -7,7 +8,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 router = APIRouter()
 
 static_dir = Path(__file__).parent.parent / "static"
-_template_cache: str | None = None
+_template_cache: Optional[str] = None
 
 
 def _get_template() -> str:

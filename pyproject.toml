@@ -3,14 +3,14 @@ name = "makoview"
 version = "0.2.0"
 description = "Visualise the results from Mako"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
-    "duckdb>=1.5.1",
-    "fastapi>=0.135.2",
+    "duckdb>=1.4.5",
+    "fastapi>=0.128.8",
     "pydantic>=2",
     "pyfaidx>=0.9.0.4",
     "seaborn>=0.13",
-    "uvicorn[standard]>=0.42.0",
+    "uvicorn[standard]>=0.39.0",
 ]
 
 [project.scripts]
