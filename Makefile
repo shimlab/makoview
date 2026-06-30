@@ -1,10 +1,11 @@
-.PHONY: dev build webdev demobuild init
+.PHONY: dev build webdev demobuild init publish_to_pypi
 
 webdev:
 	cd frontend && npm run dev
 
 build:
 	cd frontend && npm run build
+	rm -rf dist
 	rm -rf backend/makoview/static/
 	mkdir -p backend/makoview/static
 	mv frontend/dist/* backend/makoview/static/
@@ -26,3 +27,6 @@ init:
 	uv run makoview init \
 		--gtf gencode.v49.annotation.gtf.gz \
 		--genome GRCh38.p14.genome.fa
+
+publish_to_pypi: build
+	uvx twine upload dist/*
