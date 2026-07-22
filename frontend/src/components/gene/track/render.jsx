@@ -22,6 +22,7 @@ export const TrackRenderer = function TrackRenderer({
 }) {
   const data = useAtomValue(dataAtom);
   const displayOptions = useAtomValue(displayOptionsAtom);
+  const selectedSite = useAtomValue(selectedSiteAtom);
   const setSelectedSite = useSetAtom(selectedSiteAtom);
 
   const txRowMap = new Map();
@@ -165,8 +166,29 @@ export const TrackRenderer = function TrackRenderer({
     }
   }
 
+  let siteHighlight = null;
+  if (selectedSite) {
+    const selectedRowIdx = txRowMap.get(selectedSite.transcript_id);
+    if (selectedRowIdx !== undefined) {
+      const x = genomicToPixel(selectedSite.chr_position);
+      siteHighlight = (
+        <rect
+          x={x - 12}
+          y={selectedRowIdx * LINE_HEIGHT + 14}
+          width={24}
+          height={62}
+          fill="#7edded"
+          stroke="#06b6d4"
+          strokeWidth={4}
+          pointerEvents="none"
+        />
+      );
+    }
+  }
+
   return (
     <g>
+      {siteHighlight}
       {trackLineElements}
       {exonElements}
       {siteBars}

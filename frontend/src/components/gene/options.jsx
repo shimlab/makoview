@@ -30,7 +30,7 @@ function OptionsBar() {
 
   return (
     <div className="flex flex-row gap-2 items-center px-4 h-10 bg-white">
-      <span className="text-xs font-semibold uppercase text-gray-500 mr-1">Show</span>
+      <span className="text-xs font-semibold uppercase text-gray-500 mr-1">Filter</span>
       {items.map(({ key, label, icon }) => (
         <button
           key={key}

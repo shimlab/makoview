@@ -23,7 +23,7 @@ class GeneDatabase:
 
         self.create_gene_annotation_db(gtf_path, self._gtf_db_path)
 
-        logger.info("↪ Initialise reference: %s", genome_ref_path)
+        logger.info("↪ Initialise reference:        %s", genome_ref_path)
         self.genes = Fasta(genome_ref_path)
 
     def init_conn(

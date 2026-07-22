@@ -49,10 +49,12 @@ function Sidebar({ sortedTxIds, coveredTxIds, yScrollRef }) {
 
           return (
             <div
-              className={`group h-[80px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"} flex flex-col justify-center `}
+              className={
+                `group h-[80px] ${coveredTxIds.has(txId) ? "" : "text-gray-400"} ` + "flex flex-col justify-center"
+              }
               key={txId}
             >
-              <div className={"rounded-sm p-2 ml-2 " + (selectedSite?.transcript_id === txId ? "bg-[#acdce3]" : "")}>
+              <div className="p-2 ml-2">
                 <div className="text-xs tabular-nums">
                   {tx_counts} reads ({pct}%)
                 </div>
