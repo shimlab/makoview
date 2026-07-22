@@ -84,7 +84,15 @@ function InfoPanel() {
         >
           {selectedSite && (
             <div className="flex flex-row gap-4 text-white items-start">
-              <CloseArrow onClose={() => setSelectedSite(null)} />
+              <div
+                className={
+                  "text-2xl rounded-full bg-white text-[#0e4f7a] h-10 w-10 flex items-center justify-center " +
+                  "cursor-pointer hover-lift user-select-none"
+                }
+                onClick={() => setSelectedSite(null)}
+              >
+                ✕
+              </div>
 
               {Object.keys(selectedSite)
                 .filter((key) => SITE_FIELDS[key])

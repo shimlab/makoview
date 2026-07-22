@@ -55,17 +55,18 @@ export function CloseArrow({ onClose }) {
           />
         </marker>
       </defs>
-      <path
-        d="M15 0 C23 15, 7 30, 15 45 C23 60, 7 75, 15 90 C19 98, 15 110, 15 120"
+      <circle cx="20" cy="20" r="20" fill="white" />
+      <text x="11" y="28" font-size="24px" fill="#0e4f7a">
+        ✕
+      </text>
+      {/* <path
+        d="M15 12 C23 15, 7 30, 15 45 C23 60, 7 75, 15 90 C19 98, 15 110, 15 120"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         markerEnd="url(#arrowhead)"
-      />
-      <text x="25" y="60" textAnchor="middle" transform="rotate(90, 25, 60)" fill="currentColor">
-        CLOSE
-      </text>
+      /> */}
     </svg>
   );
 }
