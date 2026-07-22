@@ -1,8 +1,10 @@
 import argparse
 import copy
 import logging
+import getpass
 from contextlib import asynccontextmanager
 from pathlib import Path
+from socket import gethostname
 
 import uvicorn
 from uvicorn.config import LOGGING_CONFIG
@@ -16,7 +18,7 @@ from .utils.gff import GeneDatabase
 logger = logging.getLogger(__name__)
 
 
-STARTUP_MESSAGE = """
+STARTUP_MESSAGE = """[blue]
 .___  ___.      ___       __  ___   ______   
 |   \\/   |     /   \\     |  |/  /  /  __  \\  
 |  \\  /  |    /  ^  \\    |  '  /  |  |  |  | 
@@ -26,7 +28,7 @@ STARTUP_MESSAGE = """
                      _   _  _ ___  _   _ 
                     | \\ / || | __|| | | |
                     `\\ V /'| | _| | 'V' |
-                      \\_/  |_|___|!_/ \\_!
+                      \\_/  |_|___|!_/ \\_![/blue]
                                             
 makoview: visualisation of differential RNA
           modifications
@@ -35,13 +37,26 @@ Shim Lab @ University of Melbourne
 
 docs:   https://shimlab.github.io/mako
 
-============================================================
-  Makoview is running on http://{}:{}
+[bright_black]============================================================[/bright_black]
+  [bold]Makoview is now running on [bright_green]http://{ip}:{port}[/bright_green][/bold]
   
-  Tip: advice on accessing Makoview from other devices
+  [bold bright_yellow]Tip[/bold bright_yellow]: advice on accessing Makoview from other devices
        using SSH port forwarding can be found in the docs:
        https://shimlab.github.io/mako/makoview
-============================================================
+
+       In short: on a client device, run the following SSH
+       command to forward the port to your local machine:
+    
+       $ ssh -NL {port}:localhost:{port} <user>@<server>
+
+       And then access Makoview in your client browser at
+
+       http://localhost:{port}
+
+       Replace <user> and <server> with your username and
+       the server address: for instance,
+       {user}@{hostname}
+[bright_black]============================================================[/bright_black]
 """
 
 
@@ -111,7 +126,18 @@ class _UvicornLogFilter(logging.Filter):
         ):
             return False
         if record.msg.startswith("Uvicorn running on"):
-            print(STARTUP_MESSAGE.format(self.host, self.port))
+            from rich.console import Console
+
+            # Initialize a custom console that skips URL matching
+            console = Console(highlight=False)
+            console.print(
+                STARTUP_MESSAGE.format(
+                    ip=self.host,
+                    port=self.port,
+                    hostname=gethostname(),
+                    user=getpass.getuser(),
+                )
+            )
             return False
         return True
 
@@ -136,6 +162,12 @@ def cli():
     )
     serve_parser.add_argument("--host", default="127.0.0.1")
     serve_parser.add_argument("--port", type=int, default=8001)
+    serve_parser.add_argument(
+        "--modified_prob_threshold",
+        type=float,
+        required=True,
+        help="Probability threshold above which a site is considered modified",
+    )
     serve_parser.add_argument(
         "--genome", required=True, help="Path to genome reference fasta"
     )
@@ -162,6 +194,7 @@ def cli():
     )
     app.state.host = args.host
     app.state.port = args.port
+    app.state.modified_prob_threshold = args.modified_prob_threshold
 
     log_config = copy.deepcopy(LOGGING_CONFIG)
     log_config["loggers"]["makoview"] = {

@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import SiteNavbar from "./components/site/navbar";
 
 const data = window.__SITE_DATA__;
-const { site, test, reads } = data;
+const { site, test, reads, modified_prob_threshold } = data;
 
 const SITE_FIELDS = [
   ["transcript_id", "Transcript ID"],
@@ -114,6 +114,7 @@ export default function SitePage() {
                     <th className="px-3 py-2 border border-gray-400">read_count</th>
                     <th className="px-3 py-2 border border-gray-400">successes</th>
                     <th className="px-3 py-2 border border-gray-400">failures</th>
+                    <th className="px-3 py-2 border border-gray-400">success_rate</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -123,16 +124,24 @@ export default function SitePage() {
                       <td className="px-3 py-1.5 border-r border-gray-400">{r.group_name}</td>
                       <td className="px-3 py-1.5 border-r border-gray-400">{r.probabilities_modified.length}</td>
                       <td className="px-3 py-1.5 border-r border-gray-400">
-                        {r.probabilities_modified.filter((p) => p >= 0.5).length}
+                        {r.probabilities_modified.filter((p) => p >= modified_prob_threshold).length}
                       </td>
-                      <td className="px-3 py-1.5">{r.probabilities_modified.filter((p) => p < 0.5).length}</td>
+                      <td className="px-3 py-1.5 border-r border-gray-400">
+                        {r.probabilities_modified.filter((p) => p < modified_prob_threshold).length}
+                      </td>
+                      <td className="px-3 py-1.5">
+                        {(
+                          r.probabilities_modified.filter((p) => p >= modified_prob_threshold).length /
+                          r.probabilities_modified.length
+                        ).toFixed(4)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <ViolinPlot title="Probability Modified" src={plotBase + "probabilities" + plotParams} />
             <ViolinPlot title="Binarised Probability Modified" src={plotBase + "binarisedProbabilities" + plotParams} />
+            <ViolinPlot title="Probability Modified" src={plotBase + "probabilities" + plotParams} />
           </div>
         </div>
       </div>

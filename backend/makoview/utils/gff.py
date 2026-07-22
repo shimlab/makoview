@@ -418,7 +418,13 @@ class GeneDatabase:
         return {"site": site_info, "test": test_info, "reads": reads}
 
     def get_sample_site_data(self, transcript_id: str, position: int) -> list[dict]:
-        res = self.conn.execute(
+        if self.conn is None:
+            raise ValueError("Database connection not initialized")
+
+        # create cursor to be threadsafe
+        local_con = self.conn.cursor()
+
+        res = local_con.execute(
             """
             SELECT r.sample_name, r.group_name, r.probability_modified
             FROM reads_db.reads r

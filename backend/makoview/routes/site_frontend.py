@@ -23,6 +23,12 @@ async def site_page(transcript_id: str, position: int, request: Request):
     result = request.app.state.gtf_db.get_site_info(transcript_id, position)
     if result is None:
         return FileResponse(static_dir / "404.html", status_code=404)
-    payload = {**result, "transcript_id": transcript_id, "position": position}
+
+    payload = {
+        **result,
+        "transcript_id": transcript_id,
+        "position": position,
+        "modified_prob_threshold": request.app.state.modified_prob_threshold,
+    }
     html = _get_template().replace("__VITE_SITE_DATA__", json.dumps(payload))
     return HTMLResponse(html)

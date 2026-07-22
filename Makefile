@@ -21,7 +21,8 @@ dev: build
 		--fits adaptive_binomial_fits.tsv \
 		--genome GRCh38.p14.genome.fa \
 		--coverage /Volumes/Tungsten/lfs/coverage.dorado.duckdb \
-		--reads reads.duckdb
+		--reads reads.duckdb \
+		--modified_prob_threshold 0.5
 
 init:
 	uv run makoview init \
