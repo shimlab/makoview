@@ -1,4 +1,3 @@
-from pylab import axis
 import io
 
 import matplotlib
