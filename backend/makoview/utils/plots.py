@@ -136,7 +136,9 @@ def plot_binarised_sites(subset: pd.DataFrame, threshold: float) -> str:
     )
 
     stats = (
-        subset.groupby("label")["modified"].agg(["mean", "sem"]).reindex(label_order)
+        subset.groupby("label")["modified"]
+        .agg(mean="mean", sem=lambda x: x.sem(ddof=0))
+        .reindex(label_order)
     )
 
     ax.errorbar(
