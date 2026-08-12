@@ -59,20 +59,25 @@ def plot_violin_by_site(subset: pd.DataFrame) -> str:
         ax=ax,
     )
 
-    stats = subset.groupby("label")["pmod"].agg(["mean", "std"]).reindex(label_order)
+    stats = (
+        subset.groupby("label")["pmod"]
+        .agg(mean="mean", sem=lambda x: x.sem(ddof=1))
+        .reindex(label_order)
+    )
 
     for j, label in enumerate(label_order):
         mean_val = stats.loc[label, "mean"]
-        std_val = stats.loc[label, "std"]
+        sem_val = stats.loc[label, "sem"]
 
         ax.plot(j, mean_val, "o", color="red", markersize=6)
 
-        ymin = max(0, mean_val - std_val)
-        ymax = min(1, mean_val + std_val)
+        lower = max(0, mean_val - 2 * sem_val)
+        upper = min(1, mean_val + 2 * sem_val)
+
         ax.errorbar(
             j,
             mean_val,
-            yerr=[[mean_val - ymin], [ymax - mean_val]],
+            yerr=[[mean_val - lower], [upper - mean_val]],
             fmt="none",
             ecolor="red",
             elinewidth=1,
