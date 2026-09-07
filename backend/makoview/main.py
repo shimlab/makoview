@@ -149,13 +149,14 @@ def cli():
     init_parser = subparsers.add_parser(
         "init", help="Index GTF and genome reference, then exit"
     )
-    init_parser.add_argument("--gtf", required=True, help="Path to GTF file")
     init_parser.add_argument(
         "--genome", required=True, help="Path to genome reference fasta"
     )
 
     serve_parser = subparsers.add_parser("serve", help="Start the Makoview server")
-    serve_parser.add_argument("--gtf", required=True, help="Path to GTF file")
+    serve_parser.add_argument(
+        "--gtf_db", required=True, help="Path to GTF database file"
+    )
     serve_parser.add_argument("--sites", required=True, help="Path to sites.duckdb")
     serve_parser.add_argument(
         "--fits", required=True, help="Path to adaptive_binomial_fits.tsv"
@@ -180,12 +181,12 @@ def cli():
 
     if args.command == "init":
         logging.basicConfig(level=logging.INFO)
-        GeneDatabase(Path(args.gtf), Path(args.genome))
+        GeneDatabase.initialise_makoview(Path(args.genome))
         logger.info("Initialisation complete.")
         return
 
     app = create_app(
-        Path(args.gtf),
+        Path(args.gtf_db),
         Path(args.sites),
         Path(args.fits),
         Path(args.genome),

@@ -16,7 +16,7 @@ demobuild:
 
 dev: build
 	uv run makoview serve \
-		--gtf gencode.v49.annotation.gtf.gz \
+		--gtf_db gtf_features.duckdb \
 		--sites sites.duckdb \
 		--fits adaptive_binomial_fits.tsv \
 		--genome GRCh38.p14.genome.fa \
@@ -26,7 +26,6 @@ dev: build
 
 init:
 	uv run makoview init \
-		--gtf gencode.v49.annotation.gtf.gz \
 		--genome GRCh38.p14.genome.fa
 
 publish_to_pypi: build

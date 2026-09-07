@@ -1,9 +1,8 @@
 import duckdb
 import logging
-import os
 from pathlib import Path
 from typing import Optional
-from .split_transcript import Exon, split_tx_into_regions, get_ranges
+from .split_transcript import Exon, get_ranges
 from .motifs import DRACH
 from pyfaidx import Fasta
 
@@ -13,18 +12,20 @@ logger = logging.getLogger(__name__)
 class GeneDatabase:
     def __init__(
         self,
-        gtf_path: Path,
+        gtf_db_path: Path,
         genome_ref_path: Path,
     ):
-        logger.info("↪ Initialise GTF:              %s", gtf_path)
-        self._gtf_path = gtf_path
-        self._gtf_db_path = gtf_path.with_suffix(".db")
+        logger.info("↪ Initialise GTF:              %s", gtf_db_path)
         self.conn = None
-
-        self.create_gene_annotation_db(gtf_path, self._gtf_db_path)
+        self.gtf_db_path = gtf_db_path
 
         logger.info("↪ Initialise reference:        %s", genome_ref_path)
         self.genes = Fasta(genome_ref_path)
+
+    @classmethod
+    def initialise_makoview(cls, genome_ref_path: Path):
+        """Initialise Makoview's expensive operations, like index generation"""
+        Fasta(genome_ref_path)  # initialise pyfaidx index
 
     def init_conn(
         self,
@@ -34,94 +35,23 @@ class GeneDatabase:
         coverage_path: Path,
     ):
         self.conn = duckdb.connect(":memory:")
-        try:
-            self.conn.execute(f"ATTACH '{self._gtf_db_path}' AS gtf (READ_ONLY)")
-        except:  # noqa: E722
-            os.remove(self._gtf_db_path)
-            self.create_gene_annotation_db(self._gtf_path, self._gtf_db_path)
-            self.conn.execute(f"ATTACH '{self._gtf_db_path}' AS gtf (READ_ONLY)")
+        logger.info("↪ Attach GTF database:         %s", self.gtf_db_path)
+        self.conn.execute(f"ATTACH '{self.gtf_db_path}' AS gtf (READ_ONLY)")
+
         logger.info("↪ Attach sites:                %s", sites_path)
         self.conn.execute(f"ATTACH '{sites_path}' AS sites_db (READ_ONLY)")
+
         logger.info("↪ Attach reads:                %s", reads_path)
         self.conn.execute(f"ATTACH '{reads_path}' AS reads_db (READ_ONLY)")
+
         logger.info("↪ Attach coverage:             %s", coverage_path)
         self.conn.execute(f"ATTACH '{coverage_path}' AS coverage_db (READ_ONLY)")
+
         logger.info("↪ Attach fits:                 %s", fits_path)
         self.conn.execute(f"""
             CREATE TABLE fits AS
             SELECT * FROM read_csv('{fits_path}', delim='\t', header=true)
         """)
-
-    def create_gene_annotation_db(self, gtf_path: Path, db_path: Path):
-        """
-        Create a DuckDB database from the GTF file for fast querying.
-        Will attempt to attach an existing database if it exists, otherwise will create a new one.
-        Will modify self.conn to attach the database as a readonly gtf.
-
-        Schema for gtf:
-            CREATE TABLE transcripts (
-                gene_id VARCHAR,
-                transcript_id VARCHAR,
-                gene_type VARCHAR,
-                gene_name VARCHAR
-            );
-
-            CREATE TABLE features (
-                chromosome VARCHAR,
-                type VARCHAR,
-                start INTEGER,
-                end INTEGER,
-                strand VARCHAR,
-                transcript_id VARCHAR
-            );
-        """
-        if os.path.exists(db_path):
-            return
-
-        logger.info("↪ Creating gene annotation database...")
-        db_conn = duckdb.connect(db_path)
-
-        try:
-            # fmt: off
-            rel = db_conn.read_csv(
-                str(gtf_path),
-                delimiter="\t",
-                comment="#",
-                header=False,
-                quotechar="",
-                names=[
-                    "chromosome", "source", "type", "start", "end",
-                    "score", "strand", "phase", "attributes"
-                ],
-                dtype={"start": "int", "end": "int"},
-            )
-            rel.create_view("gtf")
-            # fmt: on
-
-            db_conn.execute("""
-                CREATE TABLE transcripts AS
-                SELECT DISTINCT
-                    regexp_extract(attributes, 'gene_id "([^"]+)"', 1) AS gene_id,
-                    regexp_extract(attributes, 'transcript_id "([^"]+)"', 1) AS transcript_id,
-                    regexp_extract(attributes, 'gene_type "([^"]+)"', 1) AS gene_type,
-                    regexp_extract(attributes, 'gene_name "([^"]+)"', 1) AS gene_name
-                FROM gtf WHERE "type" = 'transcript';
-            """)
-
-            db_conn.execute("""
-                CREATE TABLE features AS
-                SELECT chromosome, "type", "start", "end", strand,
-                    regexp_extract(attributes, 'transcript_id "([^"]+)"', 1) AS transcript_id
-                FROM gtf WHERE "type" NOT IN ('gene', 'transcript');
-            """)
-        except Exception as e:
-            # delete db if this fails
-            db_conn.close()
-            os.remove(db_path)
-            raise e
-
-        db_conn.close()
-        print("Successfully created gene annotation database.")
 
     def _process_gene(self, gene_id) -> tuple[dict, dict[str, list[Exon]]]:
         """Query and validate all exons for a gene.
@@ -146,14 +76,16 @@ class GeneDatabase:
 
         gene_name, transcripts = result
         transcript_features = dict()
+        exons = []
 
-        # fetch features for each transcript
+        # fetch regions for each transcript
         for transcript_id in transcripts:
             # fmt: off
             result = self.conn.execute("""
                 SELECT chromosome, "type", "start", "end", strand
-                FROM gtf.features
+                FROM gtf.regions
                 WHERE transcript_id = ?
+                ORDER BY "start"
             """, [transcript_id],
             ).fetchall()
 
@@ -164,17 +96,22 @@ class GeneDatabase:
                 Exon(chromosome=r[0], type=r[1], start=r[2], end=r[3], strand=r[4])
                 for r in result
             ]
-
-            regions = split_tx_into_regions(features)
-
-            transcript_features[transcript_id] = regions
             # fmt: on
+
+            # `exon` rows overlap the 5UTR/CDS/3UTR rows, so prefer the resolved
+            # regions and only fall back to bare exons for non-coding transcripts
+            exons.extend(f for f in features if f.type.lower() == "exon")
+            transcript_features[transcript_id] = [
+                f for f in features if f.type.lower() != "exon"
+            ] or features
 
         # get metadata
         first_exon = transcript_features.values().__iter__().__next__()[0]
         chromosome = first_exon.chromosome
         strand = first_exon.strand
-        ranges = get_ranges([x for xs in transcript_features.values() for x in xs])
+        ranges = get_ranges(
+            exons or [x for xs in transcript_features.values() for x in xs]
+        )
 
         metadata = {
             "chr": chromosome,
