@@ -76,7 +76,6 @@ class GeneDatabase:
 
         gene_name, transcripts = result
         transcript_features = dict()
-        exons = []
 
         # fetch regions for each transcript
         for transcript_id in transcripts:
@@ -98,20 +97,13 @@ class GeneDatabase:
             ]
             # fmt: on
 
-            # `exon` rows overlap the 5UTR/CDS/3UTR rows, so prefer the resolved
-            # regions and only fall back to bare exons for non-coding transcripts
-            exons.extend(f for f in features if f.type.lower() == "exon")
-            transcript_features[transcript_id] = [
-                f for f in features if f.type.lower() != "exon"
-            ] or features
+            transcript_features[transcript_id] = features
 
         # get metadata
         first_exon = transcript_features.values().__iter__().__next__()[0]
         chromosome = first_exon.chromosome
         strand = first_exon.strand
-        ranges = get_ranges(
-            exons or [x for xs in transcript_features.values() for x in xs]
-        )
+        ranges = get_ranges([x for xs in transcript_features.values() for x in xs])
 
         metadata = {
             "chr": chromosome,

@@ -1,6 +1,6 @@
 [project]
 name = "makoview"
-version = "0.2.4"
+version = "0.2.4.1"
 description = "Visualise the results from Mako"
 readme = "README.md"
 requires-python = ">=3.9"
